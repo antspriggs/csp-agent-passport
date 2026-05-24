@@ -1,0 +1,97 @@
+"""Agent Passport: verifiable, identity-rooted delegation tokens for AI agents."""
+
+from agent_passport.claims import (
+    AGENT_PASSPORT_CLAIM_NS,
+    ActClaim,
+    AgentClaims,
+    Passport,
+)
+from agent_passport.errors import (
+    AALInsufficient,
+    AgentPassportError,
+    AlgorithmNotAllowed,
+    AudienceMismatch,
+    ChainBroken,
+    DiscoveryError,
+    Expired,
+    FALInsufficient,
+    IALInsufficient,
+    InvalidSignature,
+    InvalidToken,
+    IssuanceError,
+    JWKSError,
+    KeyNotFound,
+    MalformedClaims,
+    NotYetValid,
+    ScopeAttenuationError,
+    ScopeViolation,
+    UnsupportedAcr,
+    UntrustedIssuer,
+    VerificationError,
+    WildcardScopeNotAllowed,
+)
+from agent_passport.issuer import (
+    DEFAULT_CHILD_TTL,
+    DEFAULT_TTL,
+    DelegationRequest,
+    IssuanceRequest,
+    Issuer,
+)
+from agent_passport.keys import InMemoryKeyStore, KeyStore
+from agent_passport.oidc import (
+    AcrMapping,
+    AssuranceLevels,
+    IDTokenValidator,
+    OIDCAssertion,
+    OIDCClient,
+    ial_acr_mapping,
+)
+from agent_passport.policy import VerificationPolicy
+from agent_passport.verifier import VerifiedPassport, Verifier
+
+__version__ = "0.0.1"
+
+__all__ = [
+    "AGENT_PASSPORT_CLAIM_NS",
+    "DEFAULT_CHILD_TTL",
+    "DEFAULT_TTL",
+    "AALInsufficient",
+    "AcrMapping",
+    "ActClaim",
+    "AgentClaims",
+    "AgentPassportError",
+    "AlgorithmNotAllowed",
+    "AssuranceLevels",
+    "AudienceMismatch",
+    "ChainBroken",
+    "DelegationRequest",
+    "DiscoveryError",
+    "Expired",
+    "FALInsufficient",
+    "IALInsufficient",
+    "IDTokenValidator",
+    "InMemoryKeyStore",
+    "InvalidSignature",
+    "InvalidToken",
+    "IssuanceError",
+    "IssuanceRequest",
+    "Issuer",
+    "JWKSError",
+    "KeyNotFound",
+    "KeyStore",
+    "MalformedClaims",
+    "NotYetValid",
+    "OIDCAssertion",
+    "OIDCClient",
+    "Passport",
+    "ScopeAttenuationError",
+    "ScopeViolation",
+    "UnsupportedAcr",
+    "UntrustedIssuer",
+    "VerificationError",
+    "VerificationPolicy",
+    "VerifiedPassport",
+    "Verifier",
+    "WildcardScopeNotAllowed",
+    "ial_acr_mapping",
+]
