@@ -79,7 +79,9 @@ def test_login_missing_env_fails_cleanly(
     runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
-    monkeypatch.delenv("CSP_DISCOVERY_URL", raising=False)
+    # Set to empty (not delenv) so python-dotenv loading a local .env
+    # cannot repopulate it — `_required_env` treats empty as unset.
+    monkeypatch.setenv("CSP_DISCOVERY_URL", "")
     result = runner.invoke(app, ["login", "--id-token", "x"])
     assert result.exit_code == 2
     assert "CSP_DISCOVERY_URL" in result.output

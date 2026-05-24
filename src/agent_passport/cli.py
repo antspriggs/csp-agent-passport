@@ -294,9 +294,33 @@ def verify(
         typer.Argument(help="Passport JWS, or `-` / omit to read from stdin."),
     ] = None,
     aud: Annotated[str, typer.Option("--aud", help="Expected audience (exact match).")] = "",
-    require_ial: Annotated[int, typer.Option("--require-ial", min=1, max=3)] = 1,
-    require_aal: Annotated[int, typer.Option("--require-aal", min=1, max=3)] = 1,
-    require_fal: Annotated[int, typer.Option("--require-fal", min=1, max=3)] = 1,
+    require_ial: Annotated[
+        int,
+        typer.Option(
+            "--require-ial",
+            min=0,
+            max=3,
+            help="Minimum IAL the token must assert (0 = skip check; default).",
+        ),
+    ] = 0,
+    require_aal: Annotated[
+        int,
+        typer.Option(
+            "--require-aal",
+            min=0,
+            max=3,
+            help="Minimum AAL the token must assert (0 = skip check; default).",
+        ),
+    ] = 0,
+    require_fal: Annotated[
+        int,
+        typer.Option(
+            "--require-fal",
+            min=0,
+            max=3,
+            help="Minimum FAL the token must assert (0 = skip check; default).",
+        ),
+    ] = 0,
     required_scope: Annotated[
         str | None,
         typer.Option("--required-scope", help="Single scope pattern that must be covered."),
