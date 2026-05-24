@@ -6,7 +6,7 @@ Stores three things across invocations:
     stable kid that verifiers can pin).
   - CSP-side bookkeeping (which discovery URL the ID token came from).
 
-Layout (under `$XDG_DATA_HOME/agent-passport/`, or `~/.local/share/agent-passport/`):
+Layout (under `$XDG_DATA_HOME/nist-agent-passport/`, or `~/.local/share/nist-agent-passport/`):
   id_token                  text file with the raw compact JWS
   id_token_meta.json        {"discovery_url": "...", "client_id": "..."}
   issuer_signing_key.json   JWK private-key dict (kty=RSA, includes d/p/q/...)
@@ -24,11 +24,11 @@ from pathlib import Path
 
 from joserfc.jwk import RSAKey
 
-_DIR_NAME = "agent-passport"
+_DIR_NAME = "nist-agent-passport"
 
 
 def xdg_data_dir() -> Path:
-    """Return `$XDG_DATA_HOME/agent-passport`, creating it if missing."""
+    """Return `$XDG_DATA_HOME/nist-agent-passport`, creating it if missing."""
     base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
     p = Path(base) / _DIR_NAME
     p.mkdir(parents=True, exist_ok=True)
@@ -93,5 +93,5 @@ def load_or_create_issuer_key() -> RSAKey:
 
 
 def issuer_key_path() -> Path:
-    """Public accessor for inspection / `agent-passport` config commands."""
+    """Public accessor for inspection / `nist-agent-passport` config commands."""
     return _issuer_key_path()

@@ -20,7 +20,7 @@ from joserfc import jwt as joserfc_jwt
 from joserfc.jwk import RSAKey
 from mock_oidc import MockOIDCProvider
 
-from agent_passport.errors import (
+from nist_agent_passport.errors import (
     AlgorithmNotAllowed,
     AudienceMismatch,
     DiscoveryError,
@@ -32,10 +32,10 @@ from agent_passport.errors import (
     UnsupportedAcr,
     UntrustedIssuer,
 )
-from agent_passport.oidc.base import AssuranceLevels, OIDCAssertion
-from agent_passport.oidc.validator import IDTokenValidator
+from nist_agent_passport.oidc.base import AssuranceLevels, OIDCAssertion
+from nist_agent_passport.oidc.validator import IDTokenValidator
 
-CLIENT_ID = "agent-passport-issuer"
+CLIENT_ID = "nist-agent-passport-issuer"
 ACR_IAL2 = "http://idmanagement.gov/ns/assurance/ial/2"
 FIXED_NOW = datetime(2026, 5, 24, 12, 0, 0, tzinfo=UTC)
 

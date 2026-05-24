@@ -7,7 +7,7 @@ import binascii
 import json
 from typing import Any
 
-from agent_passport.errors import InvalidToken
+from nist_agent_passport.errors import InvalidToken
 
 
 def parse_jws_header(token: str) -> dict[str, Any]:

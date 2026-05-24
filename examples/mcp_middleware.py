@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tests" / "fixtu
 
 from mock_oidc import MockOIDCProvider
 
-from agent_passport import (
+from nist_agent_passport import (
     IDTokenValidator,
     InMemoryKeyStore,
     IssuanceRequest,
@@ -43,9 +43,9 @@ from agent_passport import (
     Verifier,
     ial_acr_mapping,
 )
-from agent_passport._scope import scope_covers_required
+from nist_agent_passport._scope import scope_covers_required
 
-CLIENT_ID = "agent-passport-issuer"
+CLIENT_ID = "nist-agent-passport-issuer"
 ACR_IAL2 = "http://idmanagement.gov/ns/assurance/ial/2"
 MCP_AUDIENCE = "https://flights-mcp.example.com/"
 

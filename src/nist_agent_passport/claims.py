@@ -87,7 +87,7 @@ class Passport(BaseModel):
         """Render to a JSON-serializable dict suitable as a JWT payload.
 
         Datetimes become integer Unix timestamps. `AgentClaims` fields are
-        spread to top-level keys under the agent-passport namespace; None-
+        spread to top-level keys under the nist-agent-passport namespace; None-
         valued optional claims (including `acr`/`ial`/`aal`/`fal` when not
         asserted) are omitted entirely (not serialized as `null`).
         """

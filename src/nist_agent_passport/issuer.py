@@ -17,12 +17,12 @@ from uuid import uuid4
 from joserfc import jwt as joserfc_jwt
 from joserfc.jwk import RSAKey
 
-from agent_passport._clock import NowCallable, default_now
-from agent_passport._scope import scope_attenuates
-from agent_passport.claims import ActClaim, AgentClaims, Passport
-from agent_passport.errors import ScopeAttenuationError
-from agent_passport.oidc.base import OIDCClient
-from agent_passport.verifier import VerifiedPassport
+from nist_agent_passport._clock import NowCallable, default_now
+from nist_agent_passport._scope import scope_attenuates
+from nist_agent_passport.claims import ActClaim, AgentClaims, Passport
+from nist_agent_passport.errors import ScopeAttenuationError
+from nist_agent_passport.oidc.base import OIDCClient
+from nist_agent_passport.verifier import VerifiedPassport
 
 DEFAULT_TTL = timedelta(minutes=15)
 DEFAULT_CHILD_TTL = timedelta(minutes=5)
@@ -203,9 +203,9 @@ class Issuer:
         from base64 import urlsafe_b64decode
         from json import loads
 
-        from agent_passport.keys import InMemoryKeyStore
-        from agent_passport.policy import VerificationPolicy
-        from agent_passport.verifier import Verifier
+        from nist_agent_passport.keys import InMemoryKeyStore
+        from nist_agent_passport.policy import VerificationPolicy
+        from nist_agent_passport.verifier import Verifier
 
         try:
             payload_b64 = token.split(".")[1]

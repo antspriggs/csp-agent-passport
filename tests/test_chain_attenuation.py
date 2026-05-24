@@ -18,21 +18,21 @@ import pytest
 from joserfc.jwk import RSAKey
 from mock_oidc import MockOIDCProvider
 
-from agent_passport._scope import scope_attenuates
-from agent_passport.errors import ChainBroken, ScopeAttenuationError
-from agent_passport.issuer import (
+from nist_agent_passport._scope import scope_attenuates
+from nist_agent_passport.errors import ChainBroken, ScopeAttenuationError
+from nist_agent_passport.issuer import (
     DEFAULT_CHILD_TTL,
     DelegationRequest,
     IssuanceRequest,
     Issuer,
 )
-from agent_passport.keys import InMemoryKeyStore
-from agent_passport.oidc import IDTokenValidator, ial_acr_mapping
-from agent_passport.policy import VerificationPolicy
-from agent_passport.verifier import VerifiedPassport, Verifier
+from nist_agent_passport.keys import InMemoryKeyStore
+from nist_agent_passport.oidc import IDTokenValidator, ial_acr_mapping
+from nist_agent_passport.policy import VerificationPolicy
+from nist_agent_passport.verifier import VerifiedPassport, Verifier
 
 ISSUER_URL = "https://issuer.example.com"
-CLIENT_ID = "agent-passport-issuer"
+CLIENT_ID = "nist-agent-passport-issuer"
 ACR_IAL2 = "http://idmanagement.gov/ns/assurance/ial/2"
 SVC_A = "https://service-a.example.com/"
 SVC_B = "https://service-b.example.com/"
@@ -448,7 +448,7 @@ def test_verify_chain_parent_with_invalid_signature_raises(
         other_key,
         algorithms=["RS256"],
     )
-    from agent_passport.errors import InvalidSignature
+    from nist_agent_passport.errors import InvalidSignature
 
     with pytest.raises(InvalidSignature):
         verifier_for(SVC_B).verify(child_jwt, chain=[forged_parent_jwt])
@@ -670,7 +670,7 @@ def _build_forged_child(
     """
     from uuid import uuid4
 
-    from agent_passport.claims import ActClaim, AgentClaims, Passport
+    from nist_agent_passport.claims import ActClaim, AgentClaims, Passport
 
     return Passport(
         iss=parent.iss,

@@ -19,8 +19,8 @@ from joserfc import jwt as joserfc_jwt
 from joserfc.jwk import RSAKey
 from mock_oidc import MockOIDCProvider
 
-from agent_passport.claims import ActClaim, AgentClaims, Passport
-from agent_passport.keys import InMemoryKeyStore
+from nist_agent_passport.claims import ActClaim, AgentClaims, Passport
+from nist_agent_passport.keys import InMemoryKeyStore
 
 
 @pytest.fixture(scope="session")

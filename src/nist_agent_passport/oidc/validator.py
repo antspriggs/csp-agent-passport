@@ -21,9 +21,9 @@ from joserfc import jwt as joserfc_jwt
 from joserfc.errors import BadSignatureError, JoseError
 from joserfc.jwk import JWKRegistry
 
-from agent_passport._clock import NowCallable, default_now
-from agent_passport._jose import parse_jws_header
-from agent_passport.errors import (
+from nist_agent_passport._clock import NowCallable, default_now
+from nist_agent_passport._jose import parse_jws_header
+from nist_agent_passport.errors import (
     AlgorithmNotAllowed,
     AudienceMismatch,
     DiscoveryError,
@@ -34,7 +34,7 @@ from agent_passport.errors import (
     NotYetValid,
     UntrustedIssuer,
 )
-from agent_passport.oidc.base import AcrMapping, OIDCAssertion
+from nist_agent_passport.oidc.base import AcrMapping, OIDCAssertion
 
 DEFAULT_ALLOWED_ALGORITHMS: tuple[str, ...] = ("RS256", "ES256", "EdDSA")
 

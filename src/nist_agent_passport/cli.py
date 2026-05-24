@@ -1,4 +1,4 @@
-"""`agent-passport` command-line interface.
+"""`nist-agent-passport` command-line interface.
 
 Thin Typer wrapper over the library. Five subcommands per CLAUDE.md:
 
@@ -8,7 +8,7 @@ Thin Typer wrapper over the library. Five subcommands per CLAUDE.md:
   inspect   Decode (no signature check) and pretty-print all claims.
   delegate  Mint a child Passport from a parent (with attenuated scope).
 
-State lives under `$XDG_DATA_HOME/agent-passport/` (see `_storage.py`). CSP
+State lives under `$XDG_DATA_HOME/nist-agent-passport/` (see `_storage.py`). CSP
 config (discovery URL, client id/secret, redirect URI, scopes) comes from the
 environment as a generic `CSP_*` namespace — works with any OIDC + PKCE
 provider. Defaults in `.env.example` ship a placeholder discovery URL you
@@ -30,7 +30,7 @@ from typing import Annotated, Any
 import typer
 from dotenv import load_dotenv
 
-from agent_passport import (
+from nist_agent_passport import (
     AcrMapping,
     DelegationRequest,
     IDTokenValidator,
@@ -41,8 +41,8 @@ from agent_passport import (
     Verifier,
     ial_acr_mapping,
 )
-from agent_passport._login import LoginError, login_local_loopback
-from agent_passport._storage import (
+from nist_agent_passport._login import LoginError, login_local_loopback
+from nist_agent_passport._storage import (
     IDTokenMeta,
     load_id_token,
     load_or_create_issuer_key,
@@ -51,7 +51,7 @@ from agent_passport._storage import (
 )
 
 app = typer.Typer(
-    name="agent-passport",
+    name="nist-agent-passport",
     help="Verifiable, identity-rooted delegation tokens for AI agents.",
     no_args_is_help=True,
     add_completion=False,
@@ -261,7 +261,7 @@ def issue(
         id_token = load_id_token()
         if id_token is None:
             typer.secho(
-                "No stored ID token. Run `agent-passport login` first, or pass --id-token.",
+                "No stored ID token. Run `nist-agent-passport login` first, or pass --id-token.",
                 fg=typer.colors.RED,
                 err=True,
             )

@@ -24,7 +24,7 @@ This project is a deliberate, concrete contribution to the **Agent Identity & Au
 ## Audience and primary deliverable
 
 - **Audience:** developers building AI agent frameworks (LangChain, LlamaIndex, AutoGen, MCP runtimes) who need a drop-in identity/authorization primitive.
-- **Primary deliverable:** an open-source Python library (`agent-passport`) plus a CLI demo and a small set of `examples/`.
+- **Primary deliverable:** an open-source Python library (`nist-agent-passport`) plus a CLI demo and a small set of `examples/`.
 - **Explicitly not in scope (for v0):** a hosted dashboard, a TypeScript SDK, key rotation infrastructure, a production-grade key store. These are deferred until the primitives are right.
 
 ---
@@ -158,7 +158,7 @@ CSP_SCOPES="openid ..."                          # space-separated per OIDC; ver
 CSP_ACR_MAPPING=ial                              # ial (default) | pkg.module:func_name
 ```
 
-**ACR mapping (`acr` → `AssuranceLevels`):** implemented as `ial_acr_mapping` in `src/agent_passport/oidc/base.py`. Single function + a translation table — read it in one screen, audit it in two minutes. Handles:
+**ACR mapping (`acr` → `AssuranceLevels`):** implemented as `ial_acr_mapping` in `src/nist_agent_passport/oidc/base.py`. Single function + a translation table — read it in one screen, audit it in two minutes. Handles:
 - The canonical NIST 800-63-3 `http://idmanagement.gov/ns/assurance/ial/N` URIs (for N in 1–3).
 - The legacy IAF `…/loa/1` and `…/loa/3` URIs some CSPs still emit, translated conservatively: `…/loa/3` → IAL-2 (documents proofed + MFA), **not** IAL-3 (which requires in-person supervised proofing). A downstream verifier with `require_ial=3` therefore correctly rejects legacy LOA-3 tokens.
 
@@ -179,21 +179,21 @@ Lives in `tests/fixtures/mock_oidc/`. Uses an ephemeral RSA keypair generated at
 ## CLI surface
 
 ```
-agent-passport login                 # runs the OIDC dance against the configured CSP, stores ID token locally
-agent-passport issue                 # mints a delegation token from the stored ID token
+nist-agent-passport login                 # runs the OIDC dance against the configured CSP, stores ID token locally
+nist-agent-passport issue                 # mints a delegation token from the stored ID token
     --agent-id <id>
     --agent-model <model>
     --tool-scope <pattern>           # repeatable
     --task-purpose <string>
     --aud <audience>
     --ttl <seconds>                  # default 900
-agent-passport verify <token>        # validates signature/expiry/scope; prints VerifiedPassport
+nist-agent-passport verify <token>        # validates signature/expiry/scope; prints VerifiedPassport
     --require-ial <n>
     --require-aal <n>
     --aud <audience>
     --required-scope <pattern>
-agent-passport inspect <token>       # decodes and pretty-prints all claims, including the chain
-agent-passport delegate <token>      # mints a child token; --tool-scope must be a subset
+nist-agent-passport inspect <token>       # decodes and pretty-prints all claims, including the chain
+nist-agent-passport delegate <token>      # mints a child token; --tool-scope must be a subset
     --agent-id <id>
     --tool-scope <pattern>
     --ttl <seconds>                  # default 300
@@ -218,14 +218,14 @@ Examples should be runnable standalone, with comments that explain the standards
 ## Project layout
 
 ```
-agent-passport/
+nist-agent-passport/
 ├── pyproject.toml
 ├── README.md                  # public-facing: rationale, quickstart, NIST refs
 ├── CLAUDE.md                  # this file
 ├── .env.example
 ├── .gitignore                 # excludes .env, *.pem, dist/, etc.
 ├── src/
-│   └── agent_passport/
+│   └── nist_agent_passport/
 │       ├── __init__.py
 │       ├── claims.py          # Pydantic models for the token claim schema
 │       ├── issuer.py          # token-exchange logic
@@ -263,7 +263,7 @@ pip install -e '.[dev]'
 pytest
 
 # run tests with coverage
-pytest --cov=agent_passport --cov-report=term-missing
+pytest --cov=nist_agent_passport --cov-report=term-missing
 
 # lint and format
 ruff check .
@@ -273,7 +273,7 @@ ruff format .
 mypy src/
 
 # run the CLI from source
-python -m agent_passport --help
+python -m nist_agent_passport --help
 ```
 
 Use Python 3.11+. Use Pydantic v2. Use `joserfc` for JWT/JOSE handling (single dependency, JWS + JWK + JWT in one place; ships `py.typed`; the modern successor to `authlib.jose`, written by the same author — do not pull in `authlib` or `pyjwt`). Use `httpx` for HTTP. Use `Typer` for the CLI (better ergonomics than Click for typed commands).

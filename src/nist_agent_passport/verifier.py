@@ -31,11 +31,11 @@ from joserfc import jwt as joserfc_jwt
 from joserfc.errors import BadSignatureError, JoseError
 from pydantic import ValidationError
 
-from agent_passport._clock import NowCallable, default_now
-from agent_passport._jose import parse_jws_header
-from agent_passport._scope import scope_attenuates, scope_covers_required
-from agent_passport.claims import Passport
-from agent_passport.errors import (
+from nist_agent_passport._clock import NowCallable, default_now
+from nist_agent_passport._jose import parse_jws_header
+from nist_agent_passport._scope import scope_attenuates, scope_covers_required
+from nist_agent_passport.claims import Passport
+from nist_agent_passport.errors import (
     AALInsufficient,
     AlgorithmNotAllowed,
     AudienceMismatch,
@@ -51,8 +51,8 @@ from agent_passport.errors import (
     UntrustedIssuer,
     WildcardScopeNotAllowed,
 )
-from agent_passport.keys import KeyStore
-from agent_passport.policy import VerificationPolicy
+from nist_agent_passport.keys import KeyStore
+from nist_agent_passport.policy import VerificationPolicy
 
 
 @dataclass(frozen=True)

@@ -6,7 +6,7 @@ Apps). Discovery is well-known-driven (per CLAUDE.md) — only the CSP's
 discovery URL is hardcoded; `authorization_endpoint` and `token_endpoint`
 come from the discovery doc.
 
-Used by `agent-passport login`. Built as a library function so tests can call
+Used by `nist-agent-passport login`. Built as a library function so tests can call
 it directly with a mocked or in-process CSP.
 """
 
@@ -124,7 +124,7 @@ def login_local_loopback(
         port = parsed_redirect.port or 0
         server = HTTPServer((host, port), _Handler)
         thread = threading.Thread(
-            target=server.handle_request, daemon=True, name="agent-passport-login"
+            target=server.handle_request, daemon=True, name="nist-agent-passport-login"
         )
         thread.start()
 

@@ -7,7 +7,7 @@ Per-test isolation:
     a real (in-process) CSP via the IDTokenValidator.
   - CSP env vars (CSP_*) are set on `monkeypatch` so the CLI reads them.
 
-The OAuth code flow itself (`agent-passport login` without `--id-token`) is
+The OAuth code flow itself (`nist-agent-passport login` without `--id-token`) is
 tested via `_login.login_local_loopback` separately, with a mocked discovery /
 token endpoint, so we don't actually open a browser in CI.
 """
@@ -21,9 +21,9 @@ import pytest
 from mock_oidc import MockOIDCProvider
 from typer.testing import CliRunner
 
-from agent_passport.cli import app
+from nist_agent_passport.cli import app
 
-CLIENT_ID = "agent-passport-issuer"
+CLIENT_ID = "nist-agent-passport-issuer"
 ACR_IAL2 = "http://idmanagement.gov/ns/assurance/ial/2"  # NIST IAL-2 (identity verified + MFA)
 MCP_AUDIENCE = "https://mcp.example.com/"
 
@@ -46,7 +46,7 @@ def cli_env(
     monkeypatch.setenv("CSP_CLIENT_ID", CLIENT_ID)
     monkeypatch.setenv("CSP_CLIENT_SECRET", "")  # mock doesn't need it
     monkeypatch.setenv("AGENT_PASSPORT_ISSUER", "https://issuer.local")
-    return tmp_path / "agent-passport"
+    return tmp_path / "nist-agent-passport"
 
 
 # --------------------------------------------------------------------------- #

@@ -1,12 +1,12 @@
 """Agent Passport: verifiable, identity-rooted delegation tokens for AI agents."""
 
-from agent_passport.claims import (
+from nist_agent_passport.claims import (
     AGENT_PASSPORT_CLAIM_NS,
     ActClaim,
     AgentClaims,
     Passport,
 )
-from agent_passport.errors import (
+from nist_agent_passport.errors import (
     AALInsufficient,
     AgentPassportError,
     AlgorithmNotAllowed,
@@ -30,15 +30,15 @@ from agent_passport.errors import (
     VerificationError,
     WildcardScopeNotAllowed,
 )
-from agent_passport.issuer import (
+from nist_agent_passport.issuer import (
     DEFAULT_CHILD_TTL,
     DEFAULT_TTL,
     DelegationRequest,
     IssuanceRequest,
     Issuer,
 )
-from agent_passport.keys import InMemoryKeyStore, KeyStore
-from agent_passport.oidc import (
+from nist_agent_passport.keys import InMemoryKeyStore, KeyStore
+from nist_agent_passport.oidc import (
     AcrMapping,
     AssuranceLevels,
     IDTokenValidator,
@@ -46,8 +46,8 @@ from agent_passport.oidc import (
     OIDCClient,
     ial_acr_mapping,
 )
-from agent_passport.policy import VerificationPolicy
-from agent_passport.verifier import VerifiedPassport, Verifier
+from nist_agent_passport.policy import VerificationPolicy
+from nist_agent_passport.verifier import VerifiedPassport, Verifier
 
 __version__ = "0.0.1"
 

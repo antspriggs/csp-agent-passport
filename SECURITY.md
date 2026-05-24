@@ -18,7 +18,7 @@ policy when it reaches a stable 1.0.
 
 The preferred channel is GitHub's private security advisory mechanism:
 
-> **[Report a vulnerability →](https://github.com/antspriggs/agent-passport/security/advisories/new)**
+> **[Report a vulnerability →](https://github.com/antspriggs/nist-agent-passport/security/advisories/new)**
 
 Use this form for anything affecting:
 
@@ -62,7 +62,7 @@ shorter window if the issue is being actively exploited.
 
 ## What is in scope
 
-The Agent Passport library itself: anything inside `src/agent_passport/`,
+The Agent Passport library itself: anything inside `src/nist_agent_passport/`,
 the CLI, the mock OIDC provider, and the example code.
 
 ## What is out of scope

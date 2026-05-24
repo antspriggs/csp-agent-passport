@@ -15,21 +15,21 @@ import pytest
 from joserfc.jwk import RSAKey
 from mock_oidc import MockOIDCProvider
 
-from agent_passport.errors import (
+from nist_agent_passport.errors import (
     AudienceMismatch,
     Expired,
     JWKSError,
     UnsupportedAcr,
     UntrustedIssuer,
 )
-from agent_passport.issuer import DEFAULT_TTL, IssuanceRequest, Issuer
-from agent_passport.keys import InMemoryKeyStore
-from agent_passport.oidc import IDTokenValidator, ial_acr_mapping
-from agent_passport.policy import VerificationPolicy
-from agent_passport.verifier import Verifier
+from nist_agent_passport.issuer import DEFAULT_TTL, IssuanceRequest, Issuer
+from nist_agent_passport.keys import InMemoryKeyStore
+from nist_agent_passport.oidc import IDTokenValidator, ial_acr_mapping
+from nist_agent_passport.policy import VerificationPolicy
+from nist_agent_passport.verifier import Verifier
 
 ISSUER_URL = "https://issuer.example.com"
-CLIENT_ID = "agent-passport-issuer"
+CLIENT_ID = "nist-agent-passport-issuer"
 ACR_IAL2 = "http://idmanagement.gov/ns/assurance/ial/2"
 ACR_IAL3 = "http://idmanagement.gov/ns/assurance/ial/3"
 MCP_AUDIENCE = "https://mcp.example.com/"
@@ -194,7 +194,7 @@ def test_id_token_without_acr_mints_passport_with_no_assurance(
     assert p.aal is None
     assert p.fal is None
     # But a verifier that requires IAL=1 rejects the same token.
-    from agent_passport.errors import IALInsufficient
+    from nist_agent_passport.errors import IALInsufficient
 
     with pytest.raises(IALInsufficient):
         _verifier(issuer, require_ial=1).verify(passport_jwt)
@@ -268,7 +268,7 @@ def test_passport_signed_with_issuer_key_and_advertised_kid(
 ) -> None:
     """The kid in the issued JWS header matches issuer.kid (RFC 7638 thumbprint)."""
     passport_jwt = issuer.issue(_request(id_token=_id_token(mock_oidc)))
-    from agent_passport._jose import parse_jws_header
+    from nist_agent_passport._jose import parse_jws_header
 
     header = parse_jws_header(passport_jwt)
     assert header["alg"] == "RS256"
@@ -289,7 +289,7 @@ def test_public_jwk_does_not_leak_private_material(issuer: Issuer) -> None:
 
 def test_issuer_uses_oidc_client_protocol(issuer_key: RSAKey) -> None:
     """A tiny in-memory OIDCClient also works — the seam is honored."""
-    from agent_passport.oidc.base import OIDCAssertion
+    from nist_agent_passport.oidc.base import OIDCAssertion
 
     class StubClient:
         def __init__(self) -> None:

@@ -1,12 +1,39 @@
 # Changelog
 
-All notable changes to Agent Passport are documented here. Format follows
+All notable changes to NIST Agent Passport are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_No changes yet._
+### Changed (breaking)
+
+- **Renamed package from `agent-passport` to `nist-agent-passport`.** The
+  generic name is contested in the agent-identity namespace (multiple
+  parallel projects: an `agentpassport` PyPI suite, `agent-passport-standard`
+  with blockchain anchoring, `agentpassportai/agent-passport` framed as
+  "OAuth for the agentic era"). The new name signals the NIST 800-63-3 /
+  RFC 8693 / OIDC + PKCE lineage explicitly, which is this project's
+  differentiated value.
+  - Python import path: `agent_passport` → `nist_agent_passport`
+  - PyPI package: `agent-passport` → `nist-agent-passport`
+  - CLI binary: `agent-passport` → `nist-agent-passport`
+  - Claim namespace URI **unchanged** at `https://agent-passport.org/claims/`
+    (semantic identifier separate from the package name; any tokens issued
+    against the v0.0.1 namespace still parse against the renamed library).
+
+### Added
+
+- **`CODE_OF_CONDUCT.md`** — Contributor Covenant 2.1, enforcement
+  contact wired to the maintainer.
+- **`MAINTAINERS.md`** — names the maintainer (`@antspriggs`) with role
+  + contact, documents how to propose maintainership.
+- **`pip-audit` step in CI** — fails the build on any OSV-known CVE in
+  the resolved dependency tree (`--strict` mode).
+- **`.github/workflows/release.yml`** — publishes to PyPI on GitHub
+  Release via Trusted Publishing (OIDC, no API token in repo secrets).
+  Requires a one-time registration on PyPI's side before the first
+  release will succeed; see the workflow's header comment.
 
 ## [0.0.1] — 2026-05-24
 
@@ -39,7 +66,7 @@ suite + GitHub Actions CI matrix on Python 3.11 / 3.12 / 3.13.
   several CSPs still emit. `…/loa/3` translates conservatively to IAL-2
   (not IAL-3) — a verifier with `require_ial=3` therefore correctly
   rejects legacy LOA-3 tokens.
-- **CLI** (`cli.py`) — `agent-passport login` / `issue` / `verify` /
+- **CLI** (`cli.py`) — `nist-agent-passport login` / `issue` / `verify` /
   `inspect` / `delegate` / `where`. OAuth 2.0 Authorization Code + PKCE
   (RFC 7636) over a local-loopback redirect (RFC 8252) for the login flow.
   Generic `CSP_*` env vars — works with any OIDC + PKCE provider.
@@ -47,7 +74,7 @@ suite + GitHub Actions CI matrix on Python 3.11 / 3.12 / 3.13.
   for a custom mapping) lets non-standard CSPs slot in via env alone, no
   code changes.
 - **Storage** (`_storage.py`) — XDG-style persistence
-  (`$XDG_DATA_HOME/agent-passport/`) for the ID token, ID-token metadata,
+  (`$XDG_DATA_HOME/nist-agent-passport/`) for the ID token, ID-token metadata,
   and the issuer's signing key (RSA-2048, generated on first use, chmod 600).
 - **Mock OIDC provider** (`tests/fixtures/mock_oidc/`) — in-process
   `ThreadingHTTPServer` with discovery + JWKS endpoints and an ID-token

@@ -37,4 +37,15 @@ jobs:
         run: mypy
 
       - name: Test (pytest with coverage)
-        run: pytest --cov=agent_passport --cov-report=term-missing
+        run: pytest --cov=nist_agent_passport --cov-report=term-missing
+
+      - name: Dependency vulnerability scan (pip-audit)
+        # Fail the build on any known-vulnerable dependency. `pip-audit`
+        # queries the OSV.dev database; default behavior exits non-zero on
+        # found vulnerabilities. `--skip-editable` excludes our own editable
+        # install from the audit (it isn't on PyPI yet by definition).
+        # We intentionally do NOT use --strict, which would also fail on
+        # the editable-skip "warning" we just opted into.
+        run: |
+          pip install pip-audit
+          pip-audit --skip-editable

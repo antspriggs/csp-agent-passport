@@ -25,7 +25,7 @@ Requires Python 3.11+.
 pip install -e '.[dev]'
 ```
 
-The install registers an `agent-passport` console script.
+The install registers an `nist-agent-passport` console script.
 
 ## Quickstart
 
@@ -40,8 +40,8 @@ That script boots an in-process mock OIDC provider, mints an ID token, exchanges
 For real CSP integration, copy `.env.example` to `.env`, fill in your sandbox credentials, then drive the CLI:
 
 ```bash
-agent-passport login                                                  # OAuth code + PKCE; browser opens
-agent-passport issue \
+nist-agent-passport login                                                  # OAuth code + PKCE; browser opens
+nist-agent-passport issue \
     --agent-id agent:alice \
     --agent-model claude-opus-4-7 \
     --tool-scope 'flights:*' \
@@ -49,15 +49,15 @@ agent-passport issue \
     --aud https://my-mcp-server.example.com/ \
     --ttl 900 > passport.jwt
 
-agent-passport inspect < passport.jwt                                 # decode and pretty-print
-agent-passport verify --aud https://my-mcp-server.example.com/ \
+nist-agent-passport inspect < passport.jwt                                 # decode and pretty-print
+nist-agent-passport verify --aud https://my-mcp-server.example.com/ \
     --require-ial 2 --required-scope 'flights:book' < passport.jwt
 ```
 
 To delegate further (e.g., from agent Alice to agent Bob):
 
 ```bash
-agent-passport delegate \
+nist-agent-passport delegate \
     --agent-id agent:bob \
     --agent-model claude-opus-4-7 \
     --tool-scope 'flights:book' \
@@ -65,7 +65,7 @@ agent-passport delegate \
     --ttl 300 < passport.jwt > child.jwt
 ```
 
-`agent-passport --help` lists all subcommands; each has its own `--help`.
+`nist-agent-passport --help` lists all subcommands; each has its own `--help`.
 
 ## Configure your CSP
 
@@ -86,7 +86,7 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 
 | Command | Purpose |
 |---|---|
-| `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
+| `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/nist-agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
 | `issue` | Mint a root Passport from the stored ID token. Flags: `--agent-id`, `--agent-model`, `--tool-scope` (repeatable), `--task-purpose`, `--aud`, `--ttl` (default 900s). |
 | `verify <token>` | Verify against a policy and print the verified claims as JSON. Flags: `--aud` (required), `--require-ial`/`--require-aal`/`--require-fal`, `--required-scope`, `--issuer` (repeatable). Token from arg or stdin. |
 | `inspect <token>` | Decode (no signature check) and pretty-print every claim, including namespaced agent claims and any chained `act`. |
@@ -96,7 +96,7 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 All token args read from stdin when `-` or absent, so the commands compose:
 
 ```bash
-agent-passport issue ... | agent-passport delegate --aud ... --agent-id ...
+nist-agent-passport issue ... | nist-agent-passport delegate --aud ... --agent-id ...
 ```
 
 ## Examples
@@ -122,7 +122,7 @@ python examples/langchain_tool_wrapper.py
 Three primitives compose to cover every use case:
 
 ```python
-from agent_passport import (
+from nist_agent_passport import (
     Issuer, IssuanceRequest, DelegationRequest,
     Verifier, VerificationPolicy, InMemoryKeyStore,
     IDTokenValidator, ial_acr_mapping,
@@ -155,12 +155,12 @@ Agent Passport composes existing standards rather than inventing new ones:
 ## Project layout
 
 ```
-agent-passport/
+nist-agent-passport/
 ├── pyproject.toml
 ├── README.md
 ├── CLAUDE.md                              # full design context
 ├── .env.example                           # CSP config template
-├── src/agent_passport/
+├── src/nist_agent_passport/
 │   ├── claims.py                          # Pydantic Passport / AgentClaims / ActClaim
 │   ├── issuer.py                          # Issuer, IssuanceRequest, DelegationRequest
 │   ├── verifier.py                        # Verifier, VerifiedPassport, chain walking
@@ -183,7 +183,7 @@ agent-passport/
 pip install -e '.[dev]'
 
 pytest                                     # full suite, hermetic
-pytest --cov=agent_passport --cov-report=term-missing
+pytest --cov=nist_agent_passport --cov-report=term-missing
 ruff check . && ruff format --check .
 mypy                                       # --strict, covers src/ + tests/
 ```

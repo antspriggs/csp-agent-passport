@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tests" / "fixtu
 
 from mock_oidc import MockOIDCProvider
 
-from agent_passport import (
+from nist_agent_passport import (
     AudienceMismatch,
     IALInsufficient,
     IDTokenValidator,
@@ -90,7 +90,7 @@ def main() -> None:
         print(f"   JWKS keys: {len(jwks['keys'])}; kid {jwks['keys'][0]['kid'][:24]}...")
 
         section("3. User authenticates at the CSP — receive an OIDC ID token")
-        client_id = "agent-passport-issuer"
+        client_id = "nist-agent-passport-issuer"
         id_token = csp.mint_id_token(
             sub="user-alice-pairwise",
             acr="http://idmanagement.gov/ns/assurance/ial/2",

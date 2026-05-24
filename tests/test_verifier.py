@@ -16,8 +16,8 @@ import pytest
 from joserfc import jwt as joserfc_jwt
 from joserfc.jwk import OctKey, RSAKey
 
-from agent_passport.claims import AgentClaims, Passport
-from agent_passport.errors import (
+from nist_agent_passport.claims import AgentClaims, Passport
+from nist_agent_passport.errors import (
     AALInsufficient,
     AlgorithmNotAllowed,
     AudienceMismatch,
@@ -33,9 +33,9 @@ from agent_passport.errors import (
     UntrustedIssuer,
     WildcardScopeNotAllowed,
 )
-from agent_passport.keys import InMemoryKeyStore
-from agent_passport.policy import VerificationPolicy
-from agent_passport.verifier import VerifiedPassport, Verifier
+from nist_agent_passport.keys import InMemoryKeyStore
+from nist_agent_passport.policy import VerificationPolicy
+from nist_agent_passport.verifier import VerifiedPassport, Verifier
 
 ISSUER = "https://issuer.example.com"
 AUDIENCE = "https://mcp.example.com/"
@@ -542,7 +542,7 @@ def test_now_callable_is_used(
 
 def test_default_now_is_utc_aware() -> None:
     """Smoke check: shared `default_now` returns tz-aware UTC."""
-    from agent_passport._clock import default_now
+    from nist_agent_passport._clock import default_now
 
     n = default_now()
     assert n.tzinfo is not None

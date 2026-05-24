@@ -1,0 +1,54 @@
+name: Release
+
+# Publishes to PyPI when a GitHub Release is published. Uses PyPI Trusted
+# Publishing (OIDC) — no API token in repo secrets, no maintainer credential
+# in CI. The PyPI side requires a one-time "Trusted Publisher" registration:
+#
+#   https://pypi.org/manage/account/publishing/
+#
+# with:
+#   PyPI Project Name : nist-agent-passport
+#   Owner             : antspriggs
+#   Repository name   : nist-agent-passport
+#   Workflow filename : release.yml
+#   Environment       : pypi
+#
+# Until that registration exists, the publish step will fail with an OIDC
+# rejection — that's expected; do the registration first.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-publish:
+    name: Build + publish to PyPI
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # Required for Trusted Publishing's OIDC exchange.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Build sdist + wheel
+        run: |
+          pip install --upgrade build
+          python -m build
+
+      - name: Verify built artifacts match the release tag
+        run: |
+          ls -la dist/
+          # Tag without leading 'v', e.g. v0.1.0 -> 0.1.0.
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if ! ls dist/nist_agent_passport-${TAG_VERSION}-*.whl > /dev/null 2>&1; then
+            echo "FATAL: dist/ does not contain a wheel matching tag version $TAG_VERSION"
+            exit 1
+          fi
+
+      - name: Publish to PyPI (Trusted Publishing, no API token)
+        uses: pypa/gh-action-pypi-publish@release/v1
