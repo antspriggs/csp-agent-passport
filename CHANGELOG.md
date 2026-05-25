@@ -18,6 +18,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   on-`main` commit, approved at deploy time. Documented in
   `GOVERNANCE.md` under "Release policy".
 
+### Fixed
+
+- **Release workflow could publish to PyPI but failed to attach the
+  SBOM** to the GitHub Release (HTTP 403 from `gh release upload`).
+  Root cause: granting `id-token: write` to the workflow caused all
+  other permissions to default to read/none, denying the `contents:
+  write` that `gh release upload` requires. Fixed by adding
+  `contents: write` explicitly. SBOMs for v0.1.0 and v0.1.1 were
+  backfilled by uploading generated CycloneDX docs to those releases
+  via a local `gh release upload`.
+
 ## [0.1.1] — 2026-05-24
 
 ### Fixed

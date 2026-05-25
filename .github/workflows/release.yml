@@ -28,6 +28,11 @@ jobs:
     permissions:
       # Required for Trusted Publishing's OIDC exchange.
       id-token: write
+      # Required to upload the CycloneDX SBOM as a Release asset via gh.
+      # Setting any permission explicitly disables defaults for the rest,
+      # so contents must be granted explicitly even though it'd be the
+      # repo default. (This bit cost us one release; see CHANGELOG §0.1.2.)
+      contents: write
     steps:
       - uses: actions/checkout@v6
         with:
