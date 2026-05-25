@@ -6,6 +6,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [0.1.0] — 2026-05-24
+
+First **PyPI** release. Substantive renaming, scope-driven-auth-by-default,
+and OSS-readiness work since v0.0.1.
+
 ### Changed (breaking)
 
 - **Renamed package from `agent-passport` to `nist-agent-passport`.** The
@@ -21,6 +28,21 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Claim namespace URI **unchanged** at `https://agent-passport.org/claims/`
     (semantic identifier separate from the package name; any tokens issued
     against the v0.0.1 namespace still parse against the renamed library).
+- **CLI `verify --require-ial/aal/fal` defaults are now 0** (was 1) and
+  the accepted range is `0..3` (was `1..3`). `0` skips the check; matches
+  the library's `VerificationPolicy.require_*` default. Surfaced by the
+  first real-CSP integration test against production ID.me (no `acr`
+  claim emitted; previous CLI default would have rejected legitimate
+  scope-only tokens).
+- **ACR / IAL / AAL / FAL are now optional throughout.** Aligned with
+  OIDC (where `acr` is optional) and supports scope-driven auth as a
+  first-class deployment mode. `Passport.acr/ial/aal/fal` and
+  `OIDCAssertion.acr/ial/aal/fal` are `Optional`; `IDTokenValidator`
+  no longer raises on missing `acr`; verifier chain walk enforces that
+  assurance levels can only propagate forward (a child cannot claim
+  what its parent doesn't assert).
+- **Generic `CSP_*` env vars.** Renamed from `IDME_*` so the same
+  configuration works with any OIDC + PKCE provider.
 
 ### Added
 
@@ -29,11 +51,19 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`MAINTAINERS.md`** — names the maintainer (`@antspriggs`) with role
   + contact, documents how to propose maintainership.
 - **`pip-audit` step in CI** — fails the build on any OSV-known CVE in
-  the resolved dependency tree (`--strict` mode).
+  the resolved dependency tree; skips our own editable install.
 - **`.github/workflows/release.yml`** — publishes to PyPI on GitHub
   Release via Trusted Publishing (OIDC, no API token in repo secrets).
-  Requires a one-time registration on PyPI's side before the first
-  release will succeed; see the workflow's header comment.
+- **First real-CSP integration validated** against production ID.me.
+  The library handles the no-`acr` path end-to-end via scope-driven
+  auth; the integration revealed (and we fixed) a CLI default-mismatch
+  bug that had survived the unit-test matrix.
+
+### Fixed
+
+- `test_login_missing_env_fails_cleanly` no longer depends on absence
+  of `.env`; uses `setenv("")` so `python-dotenv` cannot repopulate
+  the var at test time.
 
 ## [0.0.1] — 2026-05-24
 

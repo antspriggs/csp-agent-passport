@@ -22,10 +22,13 @@ This project is a concrete contribution to the [NIST AI Agent Standards Initiati
 Requires Python 3.11+.
 
 ```bash
-pip install -e '.[dev]'
+pip install nist-agent-passport
 ```
 
-The install registers an `nist-agent-passport` console script.
+The install registers a `nist-agent-passport` console script.
+
+For local development (running the test suite, editing source), see
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the editable-install instructions.
 
 ## Quickstart
 
