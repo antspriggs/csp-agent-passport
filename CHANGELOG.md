@@ -6,28 +6,39 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [0.1.2] — 2026-05-25
+
+First release with the complete release-provenance enforcement chain
+active end-to-end. No library/API changes; pure release-pipeline
+hardening + SBOM validation.
+
 ### Added
 
 - **Release-from-main invariant enforced by the release workflow.**
-  `release.yml` now refuses to publish if the tagged commit is not
+  `release.yml` refuses to publish if the tagged commit is not
   reachable from `origin/main` — guards against tagging an unmerged
-  commit. Combined with the existing `main` branch protection
-  (PRs required, admin-enforced) and a new `pypi` environment
-  deployment-branches policy (restricts deploys to `v*` tag refs),
-  every PyPI artifact corresponds to a PR-reviewed, CI-green,
-  on-`main` commit, approved at deploy time. Documented in
+  commit (tags are a separate namespace from branches and aren't
+  covered by branch protection). Combined with the existing `main`
+  branch protection (PRs required, admin-enforced) and the new `pypi`
+  environment deployment-branches policy (restricts deploys to `v*`
+  tag refs), every PyPI artifact corresponds to a PR-reviewed,
+  CI-green, on-`main` commit, approved at deploy time. Documented in
   `GOVERNANCE.md` under "Release policy".
 
 ### Fixed
 
 - **Release workflow could publish to PyPI but failed to attach the
-  SBOM** to the GitHub Release (HTTP 403 from `gh release upload`).
-  Root cause: granting `id-token: write` to the workflow caused all
-  other permissions to default to read/none, denying the `contents:
-  write` that `gh release upload` requires. Fixed by adding
-  `contents: write` explicitly. SBOMs for v0.1.0 and v0.1.1 were
-  backfilled by uploading generated CycloneDX docs to those releases
-  via a local `gh release upload`.
+  SBOM** to the GitHub Release (HTTP 403 from `gh release upload`,
+  observed during the v0.1.1 run). Root cause: granting
+  `id-token: write` to the workflow caused all other permissions to
+  default to read/none, denying the `contents: write` that
+  `gh release upload` requires. Fixed by adding `contents: write`
+  explicitly. SBOMs for v0.1.0 and v0.1.1 were backfilled by
+  uploading generated CycloneDX docs to those releases via a local
+  `gh release upload`; v0.1.2 will be the first release where the
+  SBOM attach step runs successfully in CI.
 
 ## [0.1.1] — 2026-05-24
 
