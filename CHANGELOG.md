@@ -6,7 +6,20 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_No changes yet._
+### Added
+
+- **`GOVERNANCE.md`** — documents the BDFL model (@antspriggs is current
+  BDFL), how decisions get made, what's out of scope even for the BDFL,
+  how the model is expected to evolve as the project grows, and how to
+  remove/replace the BDFL if needed.
+- **Versioning & deprecation policy** in `README.md` — pinned: in `0.y.z`
+  any release MAY break; from `1.0.0` onward, deprecations get at least
+  one minor-version notice and CHANGELOG lists them explicitly. SemVer
+  2.0.0 throughout.
+- **CycloneDX SBOM per release** — `release.yml` now generates a
+  CycloneDX 1.6 JSON SBOM against the resolved dependency tree of the
+  just-built wheel and uploads it as a GitHub Release asset (filename:
+  `nist-agent-passport-{version}.cdx.json`).
 
 ## [0.1.0] — 2026-05-24
 

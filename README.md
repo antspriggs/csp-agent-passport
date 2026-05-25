@@ -180,6 +180,30 @@ nist-agent-passport/
     └── test_*.py                          # 141+ tests; full coverage of every error path
 ```
 
+## Versioning & deprecation policy
+
+The project follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html).
+
+**While in `0.y.z` (alpha)** — any release MAY contain breaking changes.
+Breaking changes are flagged under `### Changed (breaking)` in
+[CHANGELOG.md](./CHANGELOG.md). Adopters should pin a specific version
+or version range (e.g. `nist-agent-passport>=0.1,<0.2`).
+
+**Once `1.0.0` ships:**
+
+- **Breaking changes** require a major-version bump (`1.x.y` → `2.0.0`).
+- **Deprecations** are announced at least one minor version before
+  removal — so a feature deprecated in `1.4.0` cannot be removed before
+  `2.0.0`, and a feature deprecated in `1.4.0` will continue to work
+  (with a `DeprecationWarning`) through every `1.x` release.
+- **Security fixes** may ship as patch releases on supported versions
+  without notice; see [SECURITY.md](./SECURITY.md) for the supported-versions
+  table.
+- The CHANGELOG's `### Deprecated` section is the authoritative list of
+  deprecated APIs and their planned removal versions.
+
+Governance: see [GOVERNANCE.md](./GOVERNANCE.md).
+
 ## Development
 
 ```bash

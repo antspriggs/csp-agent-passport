@@ -52,3 +52,22 @@ jobs:
 
       - name: Publish to PyPI (Trusted Publishing, no API token)
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Generate CycloneDX SBOM
+        # Install the just-built wheel into the runner's venv so the SBOM
+        # reflects the actual resolved dependency tree users will get.
+        # CycloneDX `environment` mode reads installed-package metadata.
+        run: |
+          pip install cyclonedx-bom
+          pip install dist/nist_agent_passport-*.whl
+          cyclonedx-py environment \
+            --output-format json \
+            --output-file "nist-agent-passport-${GITHUB_REF_NAME#v}.cdx.json"
+
+      - name: Attach SBOM to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            "nist-agent-passport-${GITHUB_REF_NAME#v}.cdx.json" \
+            --clobber  # idempotent on workflow re-runs
