@@ -1,6 +1,6 @@
 # Agent Passport
 
-> Verifiable, identity-rooted delegation tokens for AI agents — built on existing standards (OIDC, OAuth 2.0 Token Exchange, JWT, NIST SP 800-63 Vectors of Trust).
+> Verifiable, identity-rooted delegation tokens for AI agents — built on existing standards (OIDC, OAuth 2.0 Token Exchange, JWT, NIST SP 800-63-3 assurance levels).
 
 **Status:** v0 alpha. Library, CLI, and three runnable examples work end-to-end against a hermetic mock OIDC provider. Live CSP integration needs your `CSP_*` configuration in `.env`.
 
@@ -120,6 +120,17 @@ python examples/mcp_middleware.py
 python examples/langchain_tool_wrapper.py
 ```
 
+## How this fits
+
+There are several adjacent open-source projects. The honest map:
+
+- **You want a turnkey identity *service*** (Postgres + server, real-time revocation today, DPoP, dynamic client registration) — look at [ZeroID](https://github.com/highflame-ai/zeroid).
+- **You want a `pip install` *library*** to embed in an MCP middleware or LangChain tool wrapper, with NIST SP 800-63-3 IAL/AAL/FAL propagated through the delegation chain — you're in the right place.
+- **You need workload identity** (cryptographically attested "what runtime is this?") — look at [SPIFFE/SPIRE](https://spiffe.io/). It composes with Agent Passport, doesn't replace it.
+- **You're a security team buying a control plane** (discovery, governance, dashboards) — look at the commercial NHI vendors (Aembit, Astrix, Oasis, Token, Entro). This library deliberately doesn't compete there.
+
+See [COMPARISON.md](https://github.com/antspriggs/nist-agent-passport/blob/main/COMPARISON.md) for the full write-up, including where Agent Passport is ahead, behind, or complementary.
+
 ## Library use
 
 Three primitives compose to cover every use case:
@@ -151,7 +162,7 @@ Agent Passport composes existing standards rather than inventing new ones:
 - [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) — OAuth 2.0 Token Exchange (the `act` claim and nested actor chains)
 - [RFC 7636](https://datatracker.ietf.org/doc/html/rfc7636) — PKCE
 - [RFC 8252](https://datatracker.ietf.org/doc/html/rfc8252) — OAuth 2.0 for Native Apps (local-loopback redirect)
-- [RFC 8485](https://datatracker.ietf.org/doc/html/rfc8485) — Vectors of Trust
+- [RFC 8485](https://datatracker.ietf.org/doc/html/rfc8485) — Vectors of Trust (input-side only; carried through from the CSP when emitted, but IAL/AAL/FAL numerics are the canonical assurance representation in the Passport)
 - [NIST SP 800-63-3](https://pages.nist.gov/800-63-3/) — Digital Identity Guidelines (IAL/AAL/FAL)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) and [Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)
 
