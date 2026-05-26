@@ -43,8 +43,11 @@ dev = [
 nist-agent-passport = "nist_agent_passport.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/nist-agent-passport/nist-agent-passport"
-Issues = "https://github.com/nist-agent-passport/nist-agent-passport/issues"
+Homepage = "https://github.com/antspriggs/nist-agent-passport"
+Issues = "https://github.com/antspriggs/nist-agent-passport/issues"
+Documentation = "https://github.com/antspriggs/nist-agent-passport#readme"
+Changelog = "https://github.com/antspriggs/nist-agent-passport/blob/main/CHANGELOG.md"
+Roadmap = "https://github.com/antspriggs/nist-agent-passport/blob/main/ROADMAP.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nist_agent_passport"]

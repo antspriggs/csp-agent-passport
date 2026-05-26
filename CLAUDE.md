@@ -29,6 +29,16 @@ This project is a deliberate, concrete contribution to the **Agent Identity & Au
 
 ---
 
+## Naming and endorsement
+
+The PyPI package is currently published as `nist-agent-passport` (v0.1.2 at the time of this note). A rename to `agent-passport` is on the [roadmap](ROADMAP.md#package-rename-nist-agent-passport--agent-passport) and pending maintainer go/no-go.
+
+[NIST's published policy](https://www.nist.gov/open/license) forbids implying NIST approves or endorses any product. The `nist-` prefix from a non-NIST author crosses that line. There is no formal NIST endorsement of this library — the alignment with the [NCCOE Software and AI Agent Identity and Authorization](https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization) concept paper, RFC 8693, and SP 800-63-3 is genuine and should be claimed in prose, not in the package name.
+
+Until the rename ships, code references, imports, and the CLI continue to use `nist_agent_passport` / `nist-agent-passport`. Once it ships, both names will work for one or two minor versions before the prefixed form is removed. The namespaced claim URI `https://agent-passport.org/claims/*` is already unprefixed and is wire-compatible across the rename — no token-shape change.
+
+---
+
 ## Standards baseline
 
 Build on these. Do not invent new crypto, new claim names that duplicate existing ones, or a new identity assurance vocabulary.
@@ -36,7 +46,7 @@ Build on these. Do not invent new crypto, new claim names that duplicate existin
 - [RFC 7519 — JSON Web Token (JWT)](https://datatracker.ietf.org/doc/html/rfc7519) — token format.
 - [RFC 7515 — JSON Web Signature (JWS)](https://datatracker.ietf.org/doc/html/rfc7515) — signing.
 - [RFC 8693 — OAuth 2.0 Token Exchange](https://datatracker.ietf.org/doc/html/rfc8693) — the model for exchanging an OIDC ID token for a delegation token. The `act` claim ([§4.1](https://datatracker.ietf.org/doc/html/rfc8693#section-4.1)) is the standard way to express "agent acting on behalf of user."
-- [RFC 8485 — Vectors of Trust](https://datatracker.ietf.org/doc/html/rfc8485) — `vot`/`vtm`/`vtr` for expressing identity assurance in OIDC. Use these where the CSP supports them; otherwise carry the CSP's `acr` value forward.
+- [RFC 8485 — Vectors of Trust](https://datatracker.ietf.org/doc/html/rfc8485) — `vot`/`vtm`/`vtr` for expressing identity assurance in OIDC. **Optional, input-side only.** The active 2025–2026 agent-identity drafts (OpenID whitepaper, `draft-klrc-aiagent-auth`, AuthZEN, WIMSE) do not cite VoT; the de facto vocabulary is OIDC `acr` + IDA `verified_claims`. Read `vot/vtm/vtr` from the CSP if it emits them, but the canonical assurance representation in the Passport is IAL/AAL/FAL numerics. See "Adjacent OSS and forward-looking standards" below.
 - [NIST SP 800-63-3 — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/) — defines IAL (Identity Assurance Level), AAL (Authenticator Assurance Level), FAL (Federation Assurance Level). The whole point of this project is to propagate these levels into the agent's delegation token.
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) — the user-authentication step.
 
@@ -336,9 +346,25 @@ If a question is genuinely undecidable from those, leave a clearly-marked `# DES
 
 ---
 
+## Adjacent OSS and forward-looking standards
+
+Notes from the May 2026 IETF / OpenID / commerce-protocol landscape scan. These shape near-term design choices but do not change the v0 token shape.
+
+**Closest OSS project: [ZeroID](https://github.com/highflame-ai/zeroid)** (Highflame AI, Apache-2.0, ~139 stars as of May 2026). OAuth 2.1 + RFC 8693 + `act`-chain delegation + scope attenuation + DPoP + RFC 9396 + SSF revocation; ships as a service requiring Postgres. **Does not propagate NIST 800-63 IAL/AAL/FAL** — the NIST identity-assurance contract is the differentiator that justifies a second library in this space. See [COMPARISON.md](COMPARISON.md) for the long-form positioning write-up. When considering a new feature, check ZeroID first; if they ship it well already, ask whether to replicate for library-form-factor reasons, contribute upstream, or skip because it's service-shaped.
+
+**`agentic_ctx` watch.** Amazon's [`draft-araut-oauth-transaction-tokens-for-agents`](https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/) proposes an `agentic_ctx` claim with `current_actor`, `originator`, `chain_metadata` — the closest competitor to our `act` + `parent_jti` chain metadata. If it gains WG adoption, alias our chain-metadata fields so a Passport projects mechanically into `agentic_ctx`. No token-shape change today.
+
+**Proof-of-possession is the WIMSE direction.** The IETF WIMSE WG is moving toward WIT + WPT (proof-of-possession), and AP2 already requires RFC 7800 `cnf` for autonomous mandates. Plan an optional `cnf` claim (JWK thumbprint) as a v1 hook with `VerificationPolicy.require_cnf`. Bearer remains valid for v0.
+
+**Structured intent is coming.** The FIDO Agentic Authentication TWG and the proposed IETF AUDIT BoF push toward structured intent claims. The "audit-only `task_purpose`" stance in the token claim model section is correct today — natural-language intent is a footgun as a security boundary. Plan an `intent_digest` companion claim (hash of approved intent + optional URI pointer) so the audit trail is tamper-evident without becoming policy-bearing.
+
+**Agentic commerce protocols are converging on a common shape.** [AP2](https://ap2-protocol.org/specification/), [ACP](https://www.agenticcommerce.dev/), [Visa TAP](https://github.com/visa/trusted-agent-protocol), and Mastercard Verifiable Intent all expect transaction caps (minor units + ISO-4217), merchant binding, short expiry, and `cnf` for autonomous agents. The `txn_constraints` / `cart_binding` / `intent_digest` / `txn_id` claims on the roadmap mirror AP2 field names so a Passport can be projected into a Payment Mandate. See the [Agentic commerce claims roadmap item](ROADMAP.md#agentic-commerce-claims).
+
+---
+
 ## References
 
-- [NIST AI Agent Standards Initiative](https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative)
+- [NIST AI Agent Standards Initiative](https://www.nist.gov/caisi/ai-agent-standards-initiative)
 - [NCCOE — Software and AI Agent Identity and Authorization](https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization)
 - [NIST SP 800-63-3 — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/)
 - [RFC 7519 — JWT](https://datatracker.ietf.org/doc/html/rfc7519)
