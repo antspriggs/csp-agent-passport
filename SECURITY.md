@@ -62,7 +62,7 @@ shorter window if the issue is being actively exploited.
 
 ## What is in scope
 
-The Agent Passport library itself: anything inside `src/nist_agent_passport/`,
+The Agent Passport library itself: anything inside `src/agent_passport/`,
 the CLI, the mock OIDC provider, and the example code.
 
 ## What is out of scope

@@ -1,6 +1,6 @@
 # Governance
 
-This document describes how decisions are made for `nist-agent-passport`.
+This document describes how decisions are made for `agent-passport`.
 It is small on purpose: the project is small, has one maintainer, and
 deliberately keeps a narrow surface area.
 

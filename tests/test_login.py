@@ -14,7 +14,7 @@ from typing import Any
 import httpx
 import pytest
 
-from nist_agent_passport._login import LoginError, login_local_loopback
+from agent_passport._login import LoginError, login_local_loopback
 
 
 def _stub_get(

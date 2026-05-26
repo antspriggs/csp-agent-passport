@@ -1,6 +1,6 @@
 # Agent Passport
 
-> Verifiable, identity-rooted delegation tokens for AI agents — built on existing standards (OIDC, OAuth 2.0 Token Exchange, JWT, NIST SP 800-63 Vectors of Trust).
+> Verifiable, identity-rooted delegation tokens for AI agents — built on existing standards (OIDC, OAuth 2.0 Token Exchange, JWT, NIST SP 800-63-3 assurance levels).
 
 This file is project context for Claude Code. Read it first; it captures decisions already made so you don't re-litigate them and so the implementation stays aligned with NIST's AI Agent Standards Initiative.
 
@@ -24,18 +24,23 @@ This project is a deliberate, concrete contribution to the **Agent Identity & Au
 ## Audience and primary deliverable
 
 - **Audience:** developers building AI agent frameworks (LangChain, LlamaIndex, AutoGen, MCP runtimes) who need a drop-in identity/authorization primitive.
-- **Primary deliverable:** an open-source Python library (`nist-agent-passport`) plus a CLI demo and a small set of `examples/`.
+- **Primary deliverable:** an open-source Python library (`agent-passport`) plus a CLI demo and a small set of `examples/`.
 - **Explicitly not in scope (for v0):** a hosted dashboard, a TypeScript SDK, key rotation infrastructure, a production-grade key store. These are deferred until the primitives are right.
 
 ---
 
 ## Naming and endorsement
 
-The PyPI package is currently published as `nist-agent-passport` (v0.1.2 at the time of this note). A rename to `agent-passport` is on the [roadmap](ROADMAP.md#package-rename-nist-agent-passport--agent-passport) and pending maintainer go/no-go.
+The PyPI package, Python import, and CLI binary are all named `agent-passport` (snake-case `agent_passport` for imports). They were previously published as `nist-agent-passport` (v0.0.1 → v0.1.x); the v0.2.0 release renamed both.
 
-[NIST's published policy](https://www.nist.gov/open/license) forbids implying NIST approves or endorses any product. The `nist-` prefix from a non-NIST author crosses that line. There is no formal NIST endorsement of this library — the alignment with the [NCCOE Software and AI Agent Identity and Authorization](https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization) concept paper, RFC 8693, and SP 800-63-3 is genuine and should be claimed in prose, not in the package name.
+[NIST's published policy](https://www.nist.gov/open/license) forbids implying NIST approves or endorses any product, and a `nist-` prefix from a non-NIST author crosses that line. There is no formal NIST endorsement of this library — the alignment with the [NCCOE Software and AI Agent Identity and Authorization](https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization) concept paper, RFC 8693, and SP 800-63-3 is genuine and is claimed in prose, not in the package name.
 
-Until the rename ships, code references, imports, and the CLI continue to use `nist_agent_passport` / `nist-agent-passport`. Once it ships, both names will work for one or two minor versions before the prefixed form is removed. The namespaced claim URI `https://agent-passport.org/claims/*` is already unprefixed and is wire-compatible across the rename — no token-shape change.
+Existing users upgrading from `nist-agent-passport` v0.1.x:
+- Imports change: `from nist_agent_passport import ...` → `from agent_passport import ...`.
+- CLI command changes: `nist-agent-passport …` → `agent-passport …`.
+- XDG state migrates automatically: on first run, if `$XDG_DATA_HOME/nist-agent-passport/` exists and `$XDG_DATA_HOME/agent-passport/` does not, the directory is renamed in place — preserving the issuer signing key and ID-token state (see `_storage.py`).
+- The namespaced claim URI `https://agent-passport.org/claims/*` was always unprefixed and is wire-compatible across the rename — **no token-shape change**.
+- The GitHub repository URL is unchanged at https://github.com/antspriggs/nist-agent-passport. A repo rename is a separate decision (URL stability matters for inbound links).
 
 ---
 
@@ -168,7 +173,7 @@ CSP_SCOPES="openid ..."                          # space-separated per OIDC; ver
 CSP_ACR_MAPPING=ial                              # ial (default) | pkg.module:func_name
 ```
 
-**ACR mapping (`acr` → `AssuranceLevels`):** implemented as `ial_acr_mapping` in `src/nist_agent_passport/oidc/base.py`. Single function + a translation table — read it in one screen, audit it in two minutes. Handles:
+**ACR mapping (`acr` → `AssuranceLevels`):** implemented as `ial_acr_mapping` in `src/agent_passport/oidc/base.py`. Single function + a translation table — read it in one screen, audit it in two minutes. Handles:
 - The canonical NIST 800-63-3 `http://idmanagement.gov/ns/assurance/ial/N` URIs (for N in 1–3).
 - The legacy IAF `…/loa/1` and `…/loa/3` URIs some CSPs still emit, translated conservatively: `…/loa/3` → IAL-2 (documents proofed + MFA), **not** IAL-3 (which requires in-person supervised proofing). A downstream verifier with `require_ial=3` therefore correctly rejects legacy LOA-3 tokens.
 
@@ -189,21 +194,21 @@ Lives in `tests/fixtures/mock_oidc/`. Uses an ephemeral RSA keypair generated at
 ## CLI surface
 
 ```
-nist-agent-passport login                 # runs the OIDC dance against the configured CSP, stores ID token locally
-nist-agent-passport issue                 # mints a delegation token from the stored ID token
+agent-passport login                 # runs the OIDC dance against the configured CSP, stores ID token locally
+agent-passport issue                 # mints a delegation token from the stored ID token
     --agent-id <id>
     --agent-model <model>
     --tool-scope <pattern>           # repeatable
     --task-purpose <string>
     --aud <audience>
     --ttl <seconds>                  # default 900
-nist-agent-passport verify <token>        # validates signature/expiry/scope; prints VerifiedPassport
+agent-passport verify <token>        # validates signature/expiry/scope; prints VerifiedPassport
     --require-ial <n>
     --require-aal <n>
     --aud <audience>
     --required-scope <pattern>
-nist-agent-passport inspect <token>       # decodes and pretty-prints all claims, including the chain
-nist-agent-passport delegate <token>      # mints a child token; --tool-scope must be a subset
+agent-passport inspect <token>       # decodes and pretty-prints all claims, including the chain
+agent-passport delegate <token>      # mints a child token; --tool-scope must be a subset
     --agent-id <id>
     --tool-scope <pattern>
     --ttl <seconds>                  # default 300
@@ -228,14 +233,14 @@ Examples should be runnable standalone, with comments that explain the standards
 ## Project layout
 
 ```
-nist-agent-passport/
+agent-passport/
 ├── pyproject.toml
 ├── README.md                  # public-facing: rationale, quickstart, NIST refs
 ├── CLAUDE.md                  # this file
 ├── .env.example
 ├── .gitignore                 # excludes .env, *.pem, dist/, etc.
 ├── src/
-│   └── nist_agent_passport/
+│   └── agent_passport/
 │       ├── __init__.py
 │       ├── claims.py          # Pydantic models for the token claim schema
 │       ├── issuer.py          # token-exchange logic
@@ -273,7 +278,7 @@ pip install -e '.[dev]'
 pytest
 
 # run tests with coverage
-pytest --cov=nist_agent_passport --cov-report=term-missing
+pytest --cov=agent_passport --cov-report=term-missing
 
 # lint and format
 ruff check .
@@ -283,7 +288,7 @@ ruff format .
 mypy src/
 
 # run the CLI from source
-python -m nist_agent_passport --help
+python -m agent_passport --help
 ```
 
 Use Python 3.11+. Use Pydantic v2. Use `joserfc` for JWT/JOSE handling (single dependency, JWS + JWK + JWT in one place; ships `py.typed`; the modern successor to `authlib.jose`, written by the same author — do not pull in `authlib` or `pyjwt`). Use `httpx` for HTTP. Use `Typer` for the CLI (better ergonomics than Click for typed commands).

@@ -1,19 +1,76 @@
 # Changelog
 
-All notable changes to NIST Agent Passport are documented here. Format follows
+All notable changes to Agent Passport are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-05-26
+
+Breaking release: package and CLI renamed from `nist-agent-passport` to
+`agent-passport` per NIST endorsement policy. Wire format and claim
+namespace unchanged — tokens issued by v0.1.x verify unchanged against
+v0.2.0 and vice versa.
+
+### Changed (breaking)
+
+- **Renamed package from `nist-agent-passport` to `agent-passport`.**
+  [NIST's published policy](https://www.nist.gov/open/license) forbids
+  implying NIST approves or endorses any product; a `nist-` prefix from
+  a non-NIST author crosses that line. There is no formal NIST
+  endorsement of this library — the alignment with NCCOE / RFC 8693 /
+  SP 800-63-3 is genuine and is now claimed in prose rather than in
+  the package name.
+  - Python import path: `nist_agent_passport` → `agent_passport`
+  - PyPI distribution: `nist-agent-passport` → `agent-passport`
+  - CLI binary: `nist-agent-passport` → `agent-passport`
+  - Claim namespace URI **unchanged** at `https://agent-passport.org/claims/`
+    (was already unprefixed; wire-compatible across the rename).
+  - GitHub repository URL **unchanged** at
+    https://github.com/antspriggs/nist-agent-passport (URL stability
+    for inbound links).
+- **XDG state directory auto-migration.** `_storage.py` now checks for a
+  legacy `$XDG_DATA_HOME/nist-agent-passport/` on first call to
+  `xdg_data_dir()`; if present and the new `$XDG_DATA_HOME/agent-passport/`
+  does not yet exist, the directory is renamed in place — preserving the
+  issuer signing key (so previously-issued tokens still verify) and any
+  stored ID token. No user action required.
+
 ### Added
 
-- **`ROADMAP.md`** — indexes candidate next steps with rationale and
-  rough effort: engage NIST AI Agent Standards Initiative, second-CSP
-  validation (Login.gov / Auth0 / Keycloak), token revocation (RFC 7662),
-  JWKS hosting + rotation, full browser-OAuth integration test, CLI PII
-  redaction, Go + TypeScript SDKs, and the 1.0 prep checklist. README
-  links to it.
+- **`COMPARISON.md`** — honest positioning vs. ZeroID (closest
+  comparable OSS), SPIFFE/SPIRE (complementary, not competing), other
+  "agent-passport" namespace projects, and commercial NHI vendors.
+- **`ROADMAP.md`** extended with candidate items from the May 2026
+  standards-landscape scan: MCP authorization-spec parity (RFC 9728
+  Protected Resource Metadata, RFC 7591 Dynamic Client Registration,
+  RFC 8707 Resource Indicators, first-class MCP middleware); agentic
+  commerce claims (`txn_constraints`, `cart_binding`, `intent_digest`,
+  `txn_id` mirroring AP2 / ACP / Mastercard field names);
+  proof-of-possession via RFC 7800 `cnf`; SPIFFE-shaped `agent_id`;
+  chain-visualization `inspect --tree`; standards alignment
+  refinements; new Ecosystem alignment section with a quarterly IETF /
+  OpenID / commerce-protocol watch list.
+
+### Changed
+
+- **RFC 8485 Vectors of Trust demoted to "input-side only"** in
+  CLAUDE.md and README. The active 2025–2026 agent-identity drafts
+  (OpenID whitepaper, `draft-klrc-aiagent-auth`, AuthZEN, WIMSE) do not
+  cite VoT; the de facto vocabulary is OIDC `acr` + IDA `verified_claims`.
+  The IAL/AAL/FAL numerics in the token remain canonical — no token-shape
+  change. The library still reads `vot/vtm/vtr` from the CSP when emitted.
+- **README intro blockquote** corrected — "NIST SP 800-63 Vectors of
+  Trust" conflated two different standards; replaced with "NIST SP
+  800-63-3 assurance levels."
+
+### Fixed
+
+- **`pyproject.toml` project URLs** were pointing at a non-existent
+  `nist-agent-passport/nist-agent-passport` GitHub org; corrected to
+  `antspriggs/nist-agent-passport`. Added `Documentation`, `Changelog`,
+  `Roadmap` URLs while there.
 
 ## [0.1.2] — 2026-05-25
 
@@ -70,7 +127,8 @@ hardening + SBOM validation.
 - **CycloneDX SBOM per release** — `release.yml` now generates a
   CycloneDX JSON SBOM against the resolved dependency tree of the
   just-built wheel and uploads it as a GitHub Release asset (filename:
-  `nist-agent-passport-{version}.cdx.json`).
+  `nist-agent-passport-{version}.cdx.json` through v0.1.x;
+  `agent-passport-{version}.cdx.json` from v0.2.0).
 
 ## [0.1.0] — 2026-05-24
 
@@ -85,7 +143,8 @@ and OSS-readiness work since v0.0.1.
   with blockchain anchoring, `agentpassportai/agent-passport` framed as
   "OAuth for the agentic era"). The new name signals the NIST 800-63-3 /
   RFC 8693 / OIDC + PKCE lineage explicitly, which is this project's
-  differentiated value.
+  differentiated value. (Note: this rename was itself reverted in v0.2.0
+  per NIST endorsement policy — see that entry.)
   - Python import path: `agent_passport` → `nist_agent_passport`
   - PyPI package: `agent-passport` → `nist-agent-passport`
   - CLI binary: `agent-passport` → `nist-agent-passport`
@@ -160,7 +219,7 @@ suite + GitHub Actions CI matrix on Python 3.11 / 3.12 / 3.13.
   several CSPs still emit. `…/loa/3` translates conservatively to IAL-2
   (not IAL-3) — a verifier with `require_ial=3` therefore correctly
   rejects legacy LOA-3 tokens.
-- **CLI** (`cli.py`) — `nist-agent-passport login` / `issue` / `verify` /
+- **CLI** (`cli.py`) — `agent-passport login` / `issue` / `verify` /
   `inspect` / `delegate` / `where`. OAuth 2.0 Authorization Code + PKCE
   (RFC 7636) over a local-loopback redirect (RFC 8252) for the login flow.
   Generic `CSP_*` env vars — works with any OIDC + PKCE provider.
@@ -168,7 +227,7 @@ suite + GitHub Actions CI matrix on Python 3.11 / 3.12 / 3.13.
   for a custom mapping) lets non-standard CSPs slot in via env alone, no
   code changes.
 - **Storage** (`_storage.py`) — XDG-style persistence
-  (`$XDG_DATA_HOME/nist-agent-passport/`) for the ID token, ID-token metadata,
+  (`$XDG_DATA_HOME/agent-passport/`) for the ID token, ID-token metadata,
   and the issuer's signing key (RSA-2048, generated on first use, chmod 600).
 - **Mock OIDC provider** (`tests/fixtures/mock_oidc/`) — in-process
   `ThreadingHTTPServer` with discovery + JWKS endpoints and an ID-token
