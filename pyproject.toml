@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "nist-agent-passport"
-version = "0.1.2"
+name = "agent-passport"
+version = "0.2.0"
 description = "Verifiable, identity-rooted delegation tokens for AI agents."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -40,7 +40,7 @@ dev = [
 ]
 
 [project.scripts]
-nist-agent-passport = "nist_agent_passport.cli:app"
+agent-passport = "agent_passport.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/antspriggs/nist-agent-passport"
@@ -50,10 +50,10 @@ Changelog = "https://github.com/antspriggs/nist-agent-passport/blob/main/CHANGEL
 Roadmap = "https://github.com/antspriggs/nist-agent-passport/blob/main/ROADMAP.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/nist_agent_passport"]
+packages = ["src/agent_passport"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"src/nist_agent_passport/py.typed" = "nist_agent_passport/py.typed"
+"src/agent_passport/py.typed" = "agent_passport/py.typed"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -83,7 +83,7 @@ select = [
 # `ScopeViolation`) — semantic, not the conventional `*Error` suffix. The
 # names are referenced by callers branching on error type; renaming would
 # diverge from the design doc.
-"src/nist_agent_passport/errors.py" = ["N818"]
+"src/agent_passport/errors.py" = ["N818"]
 
 [tool.mypy]
 python_version = "3.11"

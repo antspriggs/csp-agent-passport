@@ -37,7 +37,7 @@ jobs:
         run: mypy
 
       - name: Test (pytest with coverage)
-        run: pytest --cov=nist_agent_passport --cov-report=term-missing
+        run: pytest --cov=agent_passport --cov-report=term-missing
 
       - name: Dependency vulnerability scan (pip-audit)
         # Fail the build on any known-vulnerable dependency. `pip-audit`

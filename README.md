@@ -22,10 +22,10 @@ This project is a concrete contribution to the [NIST AI Agent Standards Initiati
 Requires Python 3.11+.
 
 ```bash
-pip install nist-agent-passport
+pip install agent-passport
 ```
 
-The install registers a `nist-agent-passport` console script.
+The install registers an `agent-passport` console script.
 
 For local development (running the test suite, editing source), see
 [CONTRIBUTING.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CONTRIBUTING.md) for the editable-install instructions.
@@ -43,8 +43,8 @@ That script boots an in-process mock OIDC provider, mints an ID token, exchanges
 For real CSP integration, copy `.env.example` to `.env`, fill in your sandbox credentials, then drive the CLI:
 
 ```bash
-nist-agent-passport login                                                  # OAuth code + PKCE; browser opens
-nist-agent-passport issue \
+agent-passport login                                                  # OAuth code + PKCE; browser opens
+agent-passport issue \
     --agent-id agent:alice \
     --agent-model claude-opus-4-7 \
     --tool-scope 'flights:*' \
@@ -52,15 +52,15 @@ nist-agent-passport issue \
     --aud https://my-mcp-server.example.com/ \
     --ttl 900 > passport.jwt
 
-nist-agent-passport inspect < passport.jwt                                 # decode and pretty-print
-nist-agent-passport verify --aud https://my-mcp-server.example.com/ \
+agent-passport inspect < passport.jwt                                 # decode and pretty-print
+agent-passport verify --aud https://my-mcp-server.example.com/ \
     --require-ial 2 --required-scope 'flights:book' < passport.jwt
 ```
 
 To delegate further (e.g., from agent Alice to agent Bob):
 
 ```bash
-nist-agent-passport delegate \
+agent-passport delegate \
     --agent-id agent:bob \
     --agent-model claude-opus-4-7 \
     --tool-scope 'flights:book' \
@@ -68,7 +68,7 @@ nist-agent-passport delegate \
     --ttl 300 < passport.jwt > child.jwt
 ```
 
-`nist-agent-passport --help` lists all subcommands; each has its own `--help`.
+`agent-passport --help` lists all subcommands; each has its own `--help`.
 
 ## Configure your CSP
 
@@ -89,7 +89,7 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 
 | Command | Purpose |
 |---|---|
-| `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/nist-agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
+| `login` | OAuth Authorization Code + PKCE against the configured CSP (RFC 8252). Stores the ID token under `$XDG_DATA_HOME/agent-passport/`. `--id-token <jwt>` skips the OAuth dance for paste-in / scripted use. |
 | `issue` | Mint a root Passport from the stored ID token. Flags: `--agent-id`, `--agent-model`, `--tool-scope` (repeatable), `--task-purpose`, `--aud`, `--ttl` (default 900s). |
 | `verify <token>` | Verify against a policy and print the verified claims as JSON. Flags: `--aud` (required), `--require-ial`/`--require-aal`/`--require-fal`, `--required-scope`, `--issuer` (repeatable). Token from arg or stdin. |
 | `inspect <token>` | Decode (no signature check) and pretty-print every claim, including namespaced agent claims and any chained `act`. |
@@ -99,7 +99,7 @@ For most CSPs, only `CSP_DISCOVERY_URL` and `CSP_CLIENT_ID`/`SECRET` need changi
 All token args read from stdin when `-` or absent, so the commands compose:
 
 ```bash
-nist-agent-passport issue ... | nist-agent-passport delegate --aud ... --agent-id ...
+agent-passport issue ... | agent-passport delegate --aud ... --agent-id ...
 ```
 
 ## Examples
@@ -136,7 +136,7 @@ See [COMPARISON.md](https://github.com/antspriggs/nist-agent-passport/blob/main/
 Three primitives compose to cover every use case:
 
 ```python
-from nist_agent_passport import (
+from agent_passport import (
     Issuer, IssuanceRequest, DelegationRequest,
     Verifier, VerificationPolicy, InMemoryKeyStore,
     IDTokenValidator, ial_acr_mapping,
@@ -169,12 +169,12 @@ Agent Passport composes existing standards rather than inventing new ones:
 ## Project layout
 
 ```
-nist-agent-passport/
+agent-passport/
 ├── pyproject.toml
 ├── README.md
 ├── CLAUDE.md                              # full design context
 ├── .env.example                           # CSP config template
-├── src/nist_agent_passport/
+├── src/agent_passport/
 │   ├── claims.py                          # Pydantic Passport / AgentClaims / ActClaim
 │   ├── issuer.py                          # Issuer, IssuanceRequest, DelegationRequest
 │   ├── verifier.py                        # Verifier, VerifiedPassport, chain walking
@@ -198,7 +198,7 @@ The project follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.h
 **While in `0.y.z` (alpha)** — any release MAY contain breaking changes.
 Breaking changes are flagged under `### Changed (breaking)` in
 [CHANGELOG.md](https://github.com/antspriggs/nist-agent-passport/blob/main/CHANGELOG.md). Adopters should pin a specific version
-or version range (e.g. `nist-agent-passport>=0.1,<0.2`).
+or version range (e.g. `agent-passport>=0.1,<0.2`).
 
 **Once `1.0.0` ships:**
 
@@ -222,7 +222,7 @@ Candidate next steps: see [ROADMAP.md](https://github.com/antspriggs/nist-agent-
 pip install -e '.[dev]'
 
 pytest                                     # full suite, hermetic
-pytest --cov=nist_agent_passport --cov-report=term-missing
+pytest --cov=agent_passport --cov-report=term-missing
 ruff check . && ruff format --check .
 mypy                                       # --strict, covers src/ + tests/
 ```

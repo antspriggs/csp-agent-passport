@@ -40,8 +40,9 @@ this is the moment to engage.
    needs distillation for a non-implementer audience.
 2. **Introductory email to `AI-Identity@nist.gov`** — the live mailbox
    for the NCCOE project team. Accepts unsolicited input between formal
-   windows. Should follow [Package rename](#package-rename-nist-agent-passport--agent-passport)
-   to avoid an awkward "your project is named after us" conversation.
+   windows. The v0.2.0 rename (from `nist-agent-passport` to
+   `agent-passport`) was a prerequisite — sending NIST a project named
+   after them was the awkward case to avoid.
 3. **File a Letter of Interest** when the Federal Register Notice for
    NCCOE collaborators drops. Offer Agent Passport as a reference
    implementation of the "Authorization" and "Access Delegation" focus
@@ -56,35 +57,6 @@ this is the moment to engage.
 **Status:** unblocked; needs maintainer time. Lower-commitment alternative
 to the LOI path: join the [NCCOE Community of Interest](https://www.nccoe.nist.gov/get-involved)
 for updates.
-
-### Package rename: `nist-agent-passport` → `agent-passport`
-
-**Value:** [NIST's published policy](https://www.nist.gov/open/license)
-forbids implying NIST approves or endorses any product. A PyPI package
-prefixed `nist-` from a non-NIST author crosses that line; NIST General
-Counsel has historically asked projects to rename. There is no formal NIST
-endorsement of this library — only genuine *alignment* with the NCCOE
-concept paper, RFC 8693, and SP 800-63-3, which the README states
-directly. Earlier rename (now, alpha) is cheaper than later (under
-pressure, after broader adoption).
-
-**Approach:**
-- Rename package: `src/nist_agent_passport/` → `src/agent_passport/`.
-- Rename PyPI distribution and CLI script: `nist-agent-passport` →
-  `agent-passport`.
-- Publish a transitional `nist-agent-passport` release that re-exports
-  from `agent_passport` and emits a `DeprecationWarning`. Keep for one or
-  two minor versions before sunsetting on PyPI.
-- Update all README/docs/CLAUDE.md references, `[project.urls]` (current
-  pyproject.toml points to the wrong GitHub org), CHANGELOG breaking
-  entry, and the `pip install` line in the quickstart.
-- Namespaced claim URI `https://agent-passport.org/claims/*` is already
-  unprefixed — **no token-shape change**, fully wire-compatible across the
-  rename.
-- GitHub repository rename is a separate decision (URL stability matters
-  for inbound links).
-
-**Status:** designed; breaking; awaiting maintainer go/no-go.
 
 ### Standards alignment refinements
 
@@ -221,7 +193,7 @@ without committing to SPIFFE.
 ### Chain visualization in `inspect`
 
 **Value:** the delegation chain (`act` + `parent_jti`) is already in the
-token; `nist-agent-passport inspect --tree` would render it as a
+token; `agent-passport inspect --tree` would render it as a
 human-readable tree (depth, agent_id per hop, IAL at each link, scope
 delta from parent). Pure CLI sugar over existing data.
 
@@ -282,7 +254,7 @@ would let us test the full dance hermetically in CI on every PR.
 
 ### CLI PII redaction in `inspect`
 
-**Value:** the ID.me integration revealed that `nist-agent-passport
+**Value:** the ID.me integration revealed that `agent-passport
 inspect` happily prints legal names, emails, residential addresses, etc.
 when the ID token carries them. For a tool people will run in shared
 terminals (or paste into shared chats), default-redact-with-opt-in is

@@ -134,9 +134,10 @@ about:
   — Spec-stage; provenance + blockchain anchoring; custom wire format.
 
 This project ([antspriggs/nist-agent-passport](https://github.com/antspriggs/nist-agent-passport))
-is the OIDC + RFC 8693 + NIST SP 800-63 implementation. If the trademark
-question surfaces, the [package rename to `agent-passport`](ROADMAP.md#package-rename-nist-agent-passport--agent-passport)
-already on the roadmap can incorporate a name change.
+is the OIDC + RFC 8693 + NIST SP 800-63 implementation. The PyPI package
+is `agent-passport` (renamed from `nist-agent-passport` in v0.2.0 — see
+the [Naming and endorsement](CLAUDE.md#naming-and-endorsement) section
+for why). The GitHub repo URL is retained for inbound-link stability.
 
 ## Commercial NHI / Agent IAM platforms
 

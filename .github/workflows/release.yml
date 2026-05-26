@@ -7,9 +7,9 @@ name: Release
 #   https://pypi.org/manage/account/publishing/
 #
 # with:
-#   PyPI Project Name : nist-agent-passport
+#   PyPI Project Name : agent-passport
 #   Owner             : antspriggs
-#   Repository name   : nist-agent-passport
+#   Repository name   : agent-passport
 #   Workflow filename : release.yml
 #   Environment       : pypi
 #
@@ -80,7 +80,7 @@ jobs:
           ls -la dist/
           # Tag without leading 'v', e.g. v0.1.0 -> 0.1.0.
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          if ! ls dist/nist_agent_passport-${TAG_VERSION}-*.whl > /dev/null 2>&1; then
+          if ! ls dist/agent_passport-${TAG_VERSION}-*.whl > /dev/null 2>&1; then
             echo "FATAL: dist/ does not contain a wheel matching tag version $TAG_VERSION"
             exit 1
           fi
@@ -94,15 +94,15 @@ jobs:
         # CycloneDX `environment` mode reads installed-package metadata.
         run: |
           pip install cyclonedx-bom
-          pip install dist/nist_agent_passport-*.whl
+          pip install dist/agent_passport-*.whl
           cyclonedx-py environment \
             --output-format json \
-            --output-file "nist-agent-passport-${GITHUB_REF_NAME#v}.cdx.json"
+            --output-file "agent-passport-${GITHUB_REF_NAME#v}.cdx.json"
 
       - name: Attach SBOM to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${GITHUB_REF_NAME}" \
-            "nist-agent-passport-${GITHUB_REF_NAME#v}.cdx.json" \
+            "agent-passport-${GITHUB_REF_NAME#v}.cdx.json" \
             --clobber  # idempotent on workflow re-runs
