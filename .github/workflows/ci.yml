@@ -1,3 +1,7 @@
+# Per-project override for agent-passport (templates/workflows/overrides/).
+# scripts/apply_workflows.py ships this instead of the stack template
+# and fills in the runner. Edit here, not in the repo, or the next rollout
+# reverts the change.
 name: CI
 
 on:
@@ -6,6 +10,9 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 jobs:
   test:
     name: Test (${{ matrix.python-version }})
