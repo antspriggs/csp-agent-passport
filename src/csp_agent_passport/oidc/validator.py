@@ -22,7 +22,7 @@ from joserfc.errors import BadSignatureError, JoseError
 from joserfc.jwk import JWKRegistry
 
 from csp_agent_passport._clock import NowCallable, default_now
-from csp_agent_passport._jose import parse_jws_header
+from csp_agent_passport._jose import NON_ID_TOKEN_TYPS, normalize_typ, parse_jws_header
 from csp_agent_passport.errors import (
     AlgorithmNotAllowed,
     AudienceMismatch,
@@ -32,6 +32,7 @@ from csp_agent_passport.errors import (
     InvalidToken,
     JWKSError,
     NotYetValid,
+    TokenTypeMismatch,
     UntrustedIssuer,
 )
 from csp_agent_passport.oidc.base import AcrMapping, OIDCAssertion
@@ -91,6 +92,15 @@ class IDTokenValidator:
         discovery = self._get_discovery()
 
         header = parse_jws_header(id_token)
+
+        # Token-type confusion defense (ID-JAG -06 §4.3.3, RFC 8725 §3.11):
+        # an access token, ID-JAG, logout token, etc. signed by the same CSP
+        # key MUST NOT be accepted as an identity assertion.
+        if "typ" in header:
+            typ = normalize_typ(header["typ"])
+            if typ is None or typ in NON_ID_TOKEN_TYPS:
+                raise TokenTypeMismatch("ID token", str(header["typ"]))
+
         alg = header.get("alg")
         if not isinstance(alg, str) or alg not in self._allowed_algorithms:
             raise AlgorithmNotAllowed(

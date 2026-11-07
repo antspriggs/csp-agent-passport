@@ -131,6 +131,56 @@ There are several adjacent open-source projects. The honest map:
 
 See [COMPARISON.md](https://github.com/antspriggs/csp-agent-passport/blob/main/COMPARISON.md) for the full write-up, including where Agent Passport is ahead, behind, or complementary.
 
+## ID-JAG and MCP Enterprise-Managed Authorization
+
+[ID-JAG](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/)
+(Identity Assertion JWT Authorization Grant, draft -06) is the IETF spec behind
+Cross App Access and MCP's Enterprise-Managed Authorization. The enterprise IdP
+exchanges the user's ID token for an ID-JAG; the agent redeems it at the tool's
+authorization server for an access token. ID-JAG carries the IdP's `acr` but
+gives it no assurance semantics. Agent Passport supplies those semantics:
+
+```
+Agent ──ID token──▶ Enterprise IdP            (RFC 8693; the IdP's job)
+      ◀──ID-JAG────
+Agent ──ID-JAG────▶ Tool's authorization server
+                      IdJagValidator            -06 §4.4.1 checks + IAL/AAL/FAL floor
+                      Issuer.issue_from_id_jag  Passport, aud = granted resource
+      ◀──Passport──
+Agent ──Passport──▶ MCP server / tool API: Verifier (scope, chain, IAL)
+```
+
+```python
+import httpx
+from csp_agent_passport import (
+    DiscoveryKeyStore,
+    IdJagPolicy,
+    IdJagValidator,
+    TrustedIdP,
+    oauth_error_for,
+    VerificationError,
+)
+
+idp = "https://acme.okta.example"
+validator = IdJagValidator(
+    IdJagPolicy(
+        issuer="https://auth.tool.example/",  # this AS; ID-JAG aud
+        trusted_idps={idp: TrustedIdP(idp, DiscoveryKeyStore(idp, httpx.Client()))},
+        governed_resources=frozenset({"https://api.tool.example/"}),
+        require_ial=2,  # NIST floor on the IdP's acr
+    )
+)
+
+try:
+    grant = validator.validate(assertion, authenticated_client_id=client_id)
+except VerificationError as e:
+    error = oauth_error_for(e)  # "invalid_grant" / "invalid_client"; don't echo str(e)
+```
+
+Agent Passport deliberately does **not** issue ID-JAGs: that role belongs to
+the IdP the tool's authorization server already trusts. Proof-of-possession
+(`cnf`) ID-JAGs are rejected until RFC 7800 support lands (see ROADMAP).
+
 ## Library use
 
 Three primitives compose to cover every use case:
@@ -153,7 +203,7 @@ from csp_agent_passport import (
 - **`IDTokenValidator`** validates an OIDC ID token against a CSP discovered via `/.well-known/openid-configuration` (no hardcoded endpoints). `ial_acr_mapping` is the built-in `acr` → IAL/AAL/FAL translation; supply your own `AcrMapping` for CSPs that emit non-standard URIs.
 
 Typed exceptions inherit from `AgentPassportError`:
-- `VerificationError` branch: `InvalidSignature`, `Expired`, `NotYetValid`, `AudienceMismatch`, `IALInsufficient`, `ScopeViolation`, `WildcardScopeNotAllowed`, `ChainBroken`, `MalformedClaims`, …
+- `VerificationError` branch: `InvalidSignature`, `Expired`, `NotYetValid`, `AudienceMismatch`, `IALInsufficient`, `ScopeViolation`, `WildcardScopeNotAllowed`, `ChainBroken`, `MalformedClaims`, `TokenTypeMismatch`, `ClientMismatch`, `ReplayDetected`, …
 - `IssuanceError` branch: `DiscoveryError`, `JWKSError`, `UnsupportedAcr`, `ScopeAttenuationError`.
 
 Branch on the type, not the message.
@@ -170,6 +220,9 @@ Agent Passport composes existing standards rather than inventing new ones:
 - [RFC 8485](https://datatracker.ietf.org/doc/html/rfc8485) — Vectors of Trust (input-side only; carried through from the CSP when emitted, but IAL/AAL/FAL numerics are the canonical assurance representation in the Passport)
 - [NIST SP 800-63-3](https://pages.nist.gov/800-63-3/) — Digital Identity Guidelines (IAL/AAL/FAL)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) and [Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)
+- [RFC 8414](https://datatracker.ietf.org/doc/html/rfc8414) — Authorization Server Metadata (`DiscoveryKeyStore`)
+- [RFC 8725](https://datatracker.ietf.org/doc/html/rfc8725) — JWT Best Current Practices (explicit `typ`: `agent-passport+jwt`)
+- [draft-ietf-oauth-identity-assertion-authz-grant-06](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/06/) — ID-JAG (Resource AS validation via `IdJagValidator`)
 
 ## Project layout
 

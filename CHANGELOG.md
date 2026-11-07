@@ -6,6 +6,66 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Aligns Agent Passport with
+[draft-ietf-oauth-identity-assertion-authz-grant-06](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/06/)
+(ID-JAG, 31 Oct 2026), the IETF spec behind Cross App Access and MCP's
+Enterprise-Managed Authorization. Token shape is unchanged; the only wire
+change is a `typ` header on newly issued Passports.
+
+### Added
+
+- **`IdJagValidator`** (`csp_agent_passport.idjag`): Resource Authorization
+  Server-side validation of ID-JAGs presented via the RFC 7523 jwt-bearer
+  grant, per -06 §4.4.1: `typ` = `oauth-id-jag+jwt`, trusted `iss` (+
+  `tenant` for multi-tenant IdPs), per-IdP algorithm allowlist (RS256 +
+  ES256 default), `aud` = this AS's issuer, `client_id` = the authenticated
+  client, time window + maximum lifetime, `resource` governed by this AS
+  (simple string comparison), and `jti` replay protection (on by default via
+  `InMemoryReplayCache`; pluggable `ReplayCache` for multi-replica). The
+  IdP's `acr` goes through the same `AcrMapping` as the Passport issuer, so
+  an AS can enforce NIST SP 800-63-3 IAL/AAL/FAL floors on an ID-JAG, which
+  the spec itself does not define. `oauth_error_for()` maps failures to
+  `invalid_grant` / `invalid_client`.
+- **`Issuer.issue_from_id_jag(IdJagIssuanceRequest)`**: mints a Passport as
+  the Resource AS's access token from a verified ID-JAG. `aud` must be one
+  of the grant's `resource` values; `sub`, `acr`, and IAL/AAL/FAL come from
+  the grant and cannot be overridden.
+- **`DiscoveryKeyStore`**: `KeyStore` configured by issuer URL alone.
+  Resolves RFC 8414 metadata (path-inserted), falls back to OIDC Discovery,
+  enforces metadata `issuer` == configured issuer (RFC 8414 §3.3, ID-JAG
+  §9.5), caches JWKS by `kid` with rate-limited refetch on miss.
+- New typed errors: `TokenTypeMismatch`, `ClientMismatch`,
+  `ClientAuthenticationRequired`, `SenderConstraintUnsupported`,
+  `ResourceNotGoverned`, `ReplayDetected`, `LifetimeTooLong`.
+
+### Changed
+
+- **Passports now carry `typ: agent-passport+jwt`** (RFC 8725 §3.11 explicit
+  typing). The verifier **always** rejects a Passport whose `typ` names a
+  different JWT type (`at+jwt`, `oauth-id-jag+jwt`, ...). Untyped tokens
+  (no `typ`, or the generic `JWT` that pre-v0.3.0 issuers emitted) are still
+  accepted unless `VerificationPolicy(require_typ=True)`. **Deprecation:**
+  the `require_typ` default flips to `True` in v0.4.0.
+
+### Security
+
+- **`IDTokenValidator` rejects non-ID-token JWTs as subject tokens.** Before
+  this change, a CSP-signed RFC 9068 access token (or ID-JAG, logout token,
+  ...) whose `aud` equalled the issuer's `client_id` would have been accepted
+  as an ID token and exchanged for a Passport. ID-JAG -06 §4.3.3 requires a
+  token-exchange server to reject subject tokens whose `typ` names a
+  different token type. Implemented as a denylist of registered JWT types so
+  CSPs that send `typ: JWT` or no `typ` keep working.
+
+### Not implemented (documented)
+
+- Proof of possession (`cnf`, -06 §9.11). ID-JAGs carrying `cnf` are
+  rejected with `SenderConstraintUnsupported`, as the spec requires of a
+  server that cannot verify the confirmation method. Tracked with the
+  existing RFC 7800 `cnf` roadmap item.
+- Agent Passport does not *issue* ID-JAGs. That is the enterprise IdP's role;
+  see README "ID-JAG and MCP Enterprise-Managed Authorization".
+
 ## [0.2.1] — 2026-05-26
 
 The v0.2.0 rename to `agent-passport` could not be claimed on PyPI — the
