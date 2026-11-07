@@ -18,9 +18,11 @@ from joserfc import jwt as joserfc_jwt
 from joserfc.jwk import RSAKey
 
 from csp_agent_passport._clock import NowCallable, default_now
+from csp_agent_passport._jose import PASSPORT_TYP
 from csp_agent_passport._scope import scope_attenuates
 from csp_agent_passport.claims import ActClaim, AgentClaims, Passport
-from csp_agent_passport.errors import ScopeAttenuationError
+from csp_agent_passport.errors import IssuanceError, ScopeAttenuationError
+from csp_agent_passport.idjag import VerifiedIdJag
 from csp_agent_passport.oidc.base import OIDCClient
 from csp_agent_passport.verifier import VerifiedPassport
 
@@ -45,6 +47,37 @@ class IssuanceRequest:
     agent_id: str
     agent_model: str
     tool_scope: list[str] = field(default_factory=list)
+    task_purpose: str | None = None
+    ttl: timedelta | None = None
+
+
+@dataclass(frozen=True)
+class IdJagIssuanceRequest:
+    """Inputs to minting a root Passport from a verified ID-JAG.
+
+    Used by a Resource Authorization Server that redeems ID-JAGs
+    (draft-ietf-oauth-identity-assertion-authz-grant-06 §4.4) and issues
+    Agent Passports as its access tokens.
+
+    `grant`: output of `IdJagValidator.validate`. The principal (`sub`),
+        `acr`, and the IdP-attested IAL/AAL/FAL come from here; the caller
+        cannot override them.
+    `audience`: the resource server the Passport is for. When the grant
+        carries `resource`, `audience` MUST be one of those values: §4.4.1
+        requires the access token be restricted to the granted resources.
+    `tool_scope`: the Resource AS's translation of `grant.scope` into tool
+        patterns. ID-JAG scopes carry the Resource AS's own meaning (§4.3.1),
+        so the mapping is the caller's policy; it may grant a subset.
+    `agent_id`: defaults to `grant.client_id`. ID-JAG §9.10 warns that the
+        client is not the actor, so pass an explicit id when the client
+        hosts more than one agent.
+    """
+
+    grant: VerifiedIdJag
+    audience: str
+    agent_model: str
+    tool_scope: list[str] = field(default_factory=list)
+    agent_id: str | None = None
     task_purpose: str | None = None
     ttl: timedelta | None = None
 
@@ -137,6 +170,44 @@ class Issuer:
         )
         return self._sign(passport)
 
+    def issue_from_id_jag(self, request: IdJagIssuanceRequest) -> str:
+        """Mint a signed root Passport (JWS) from a verified ID-JAG.
+
+        `sub` is the IdP's subject as it appears in the grant. The grant's
+        `sub` is pairwise for this Resource AS (ID-JAG §5.2), so it is stable
+        for the user here but does not match their `sub` at other servers.
+        """
+        grant = request.grant
+        if grant.resource and request.audience not in grant.resource:
+            raise IssuanceError(
+                f"audience {request.audience!r} is not among the grant's "
+                f"resource values {list(grant.resource)} (ID-JAG -06 §4.4.1)"
+            )
+        agent_id = request.agent_id if request.agent_id is not None else grant.client_id
+        now = self._now()
+        ttl = request.ttl if request.ttl is not None else self._default_ttl
+        passport = Passport(
+            iss=self._issuer_url,
+            sub=grant.sub,
+            aud=request.audience,
+            iat=now,
+            nbf=now,
+            exp=now + ttl,
+            jti=str(uuid4()),
+            acr=grant.acr,
+            ial=grant.ial,
+            aal=grant.aal,
+            fal=grant.fal,
+            act=ActClaim(sub=agent_id),
+            agent=AgentClaims(
+                agent_id=agent_id,
+                agent_model=request.agent_model,
+                tool_scope=list(request.tool_scope),
+                task_purpose=request.task_purpose,
+            ),
+        )
+        return self._sign(passport)
+
     def delegate(self, request: DelegationRequest) -> str:
         """Mint a signed child Passport (JWS) from a verified parent token.
 
@@ -176,7 +247,7 @@ class Issuer:
 
     def _sign(self, passport: Passport) -> str:
         return joserfc_jwt.encode(
-            {"alg": "RS256", "kid": self._kid},
+            {"alg": "RS256", "kid": self._kid, "typ": PASSPORT_TYP},
             passport.to_jwt_claims(),
             self._signing_key,
             algorithms=["RS256"],

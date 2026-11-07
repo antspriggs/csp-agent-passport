@@ -4,7 +4,8 @@ Security-critical. Implemented before the issuer (per CLAUDE.md step 3) so the
 verification contract is nailed down without bending it to the issuer's bugs.
 
 Flow for a leaf token:
-  1. Parse the JWS header explicitly. Reject `alg: none`, unknown algs, and
+  1. Parse the JWS header explicitly. Reject a `typ` other than
+     `agent-passport+jwt` (RFC 8725 §3.11), `alg: none`, unknown algs, and
      headers missing `kid` *before* invoking the JOSE library.
   2. Resolve the public key via the injected `KeyStore`.
   3. Verify the JWS signature with `joserfc`, restricted to the policy's
@@ -32,7 +33,7 @@ from joserfc.errors import BadSignatureError, JoseError
 from pydantic import ValidationError
 
 from csp_agent_passport._clock import NowCallable, default_now
-from csp_agent_passport._jose import parse_jws_header
+from csp_agent_passport._jose import PASSPORT_TYP, normalize_typ, parse_jws_header
 from csp_agent_passport._scope import scope_attenuates, scope_covers_required
 from csp_agent_passport.claims import Passport
 from csp_agent_passport.errors import (
@@ -48,6 +49,7 @@ from csp_agent_passport.errors import (
     MalformedClaims,
     NotYetValid,
     ScopeViolation,
+    TokenTypeMismatch,
     UntrustedIssuer,
     WildcardScopeNotAllowed,
 )
@@ -123,6 +125,18 @@ class Verifier:
     def _decode_and_check_signature(self, token: str) -> Passport:
         """Header check, key resolution, signature verification, claim decode."""
         header = parse_jws_header(token)
+
+        # Explicit typing before anything else: a JWT of another type (ID
+        # token, access token, ID-JAG) is never a Passport, whoever signed it.
+        # `JWT` is the generic, untyped value (RFC 7519 §5.1) and is what
+        # pre-v0.3.0 issuers emitted, so it is treated like an absent `typ`.
+        typ = normalize_typ(header.get("typ"))
+        untyped = "typ" not in header or typ == "jwt"
+        if untyped:
+            if self._policy.require_typ:
+                raise TokenTypeMismatch(PASSPORT_TYP, _opt_typ(header))
+        elif typ != PASSPORT_TYP:
+            raise TokenTypeMismatch(PASSPORT_TYP, _opt_typ(header))
 
         alg = header.get("alg")
         if not isinstance(alg, str) or alg not in self._policy.allowed_algorithms:
@@ -229,3 +243,8 @@ class Verifier:
                 f"chain root has parent_jti={parents[0].agent.parent_jti!r}; "
                 "root tokens must not claim a parent"
             )
+
+
+def _opt_typ(header: dict[str, object]) -> str | None:
+    typ = header.get("typ")
+    return None if typ is None else str(typ)

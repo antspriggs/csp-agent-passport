@@ -58,6 +58,8 @@ Build on these. Do not invent new crypto, new claim names that duplicate existin
 - [RFC 7515 — JSON Web Signature (JWS)](https://datatracker.ietf.org/doc/html/rfc7515) — signing.
 - [RFC 8693 — OAuth 2.0 Token Exchange](https://datatracker.ietf.org/doc/html/rfc8693) — the model for exchanging an OIDC ID token for a delegation token. The `act` claim ([§4.1](https://datatracker.ietf.org/doc/html/rfc8693#section-4.1)) is the standard way to express "agent acting on behalf of user."
 - [RFC 8485 — Vectors of Trust](https://datatracker.ietf.org/doc/html/rfc8485) — `vot`/`vtm`/`vtr` for expressing identity assurance in OIDC. **Optional, input-side only.** The active 2025–2026 agent-identity drafts (OpenID whitepaper, `draft-klrc-aiagent-auth`, AuthZEN, WIMSE) do not cite VoT; the de facto vocabulary is OIDC `acr` + IDA `verified_claims`. Read `vot/vtm/vtr` from the CSP if it emits them, but the canonical assurance representation in the Passport is IAL/AAL/FAL numerics. See "Adjacent OSS and forward-looking standards" below.
+- [draft-ietf-oauth-identity-assertion-authz-grant (ID-JAG)](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/) — the IETF spec behind Cross App Access and MCP Enterprise-Managed Authorization. Implemented against **-06** on the *Resource Authorization Server* side only (`idjag.py`: `IdJagValidator` + `Issuer.issue_from_id_jag`). Agent Passport does **not** issue ID-JAGs; that is the enterprise IdP's role, and a library minting grants from someone else's ID token would change who the Resource AS is trusting. ID-JAG carries `acr` but defines no assurance semantics; mapping it to IAL/AAL/FAL is this project's contribution. Every check in `idjag.py` cites its -06 section; when a new revision ships, diff its Document History against those citations.
+- [RFC 8725 — JWT BCP](https://datatracker.ietf.org/doc/html/rfc8725) — explicit typing (§3.11). Passports carry `typ: agent-passport+jwt`; ID-JAGs are `oauth-id-jag+jwt`. Every JWT this library accepts is type-checked so one JWT type can never be substituted for another.
 - [NIST SP 800-63-3 — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/) — defines IAL (Identity Assurance Level), AAL (Authenticator Assurance Level), FAL (Federation Assurance Level). The whole point of this project is to propagate these levels into the agent's delegation token.
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) — the user-authentication step.
 
@@ -252,7 +254,8 @@ csp-agent-passport/
 │       ├── issuer.py          # token-exchange logic
 │       ├── verifier.py        # signature, scope, chain, IAL policy
 │       ├── policy.py          # IAL/AAL policy types
-│       ├── keys.py            # JWK loading, JWKS publishing
+│       ├── keys.py            # KeyStore, InMemoryKeyStore, DiscoveryKeyStore
+│       ├── idjag.py           # ID-JAG (-06) Resource-AS validation
 │       ├── oidc/
 │       │   ├── __init__.py
 │       │   ├── base.py        # OIDCClient + AcrMapping + ial_acr_mapping
@@ -318,6 +321,7 @@ Pydantic v2 + `mypy --strict` mostly works but its plugin occasionally needs hel
 ## Security guardrails
 
 - **Never log a full token at INFO or above.** Log `jti`, `sub`, `agent_id`, `iss`, `aud`. The full token is a bearer credential.
+- **Check `typ` on every JWT accepted.** The verifier rejects any Passport whose `typ` is not `agent-passport+jwt` (untyped/`JWT` tolerated until `require_typ` defaults to True in v0.4.0). `IDTokenValidator` rejects subject tokens typed as access tokens, ID-JAGs, Passports, etc. (ID-JAG -06 §4.3.3). `IdJagValidator` requires `oauth-id-jag+jwt`.
 - **Never accept `alg: none`.** Reject any JWS with no signature. Pin allowed algorithms to `RS256`, `ES256`, `EdDSA`.
 - **Verify `iss` and `aud` strictly.** Allowlist of issuers, exact-match on audience.
 - **Enforce `exp` and `nbf` with a small clock-skew tolerance.** Configurable per `Verifier` instance via a `clock_skew: timedelta` constructor arg; default 30 seconds, hard ceiling 120 seconds (the constructor rejects larger values). Different deployments need different tolerances; do not bake the default into call sites.

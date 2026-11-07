@@ -31,6 +31,14 @@ class VerificationPolicy:
     require_fal: int = 0
     required_scope: str | None = None
     allow_wildcard_scope: bool = False
+    # RFC 8725 §3.11 explicit typing. A Passport whose `typ` header names a
+    # different JWT type (an ID token, RFC 9068 access token, ID-JAG, ...) is
+    # ALWAYS rejected. This flag controls only whether an *untyped* Passport
+    # (no `typ`, or the generic `JWT`) is accepted: issuers before v0.3.0
+    # emitted `typ: JWT`. The
+    # default flips to True in v0.4.0; set it now if every issuer you trust
+    # is on v0.3.0+.
+    require_typ: bool = False
     clock_skew: timedelta = timedelta(seconds=30)
     allowed_algorithms: frozenset[str] = field(default_factory=lambda: _DEFAULT_ALLOWED_ALGORITHMS)
 

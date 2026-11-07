@@ -127,6 +127,65 @@ class ChainBroken(VerificationError):
     """Delegation-chain attenuation rule was violated (e.g., IAL increased)."""
 
 
+class TokenTypeMismatch(InvalidToken):
+    """JWS `typ` header names a different kind of JWT than the one expected.
+
+    Explicit typing (RFC 8725 §3.11) is the defense against cross-JWT
+    confusion: an access token, an ID-JAG, or an Agent Passport must never be
+    accepted where an OIDC ID token is expected, and vice versa
+    (draft-ietf-oauth-identity-assertion-authz-grant-06 §4.3.3).
+    """
+
+    def __init__(self, expected: str, actual: str | None) -> None:
+        self.expected = expected
+        self.actual = actual
+        super().__init__(f"expected JWT typ {expected!r}, got {actual!r}")
+
+
+class ClientMismatch(VerificationError):
+    """ID-JAG `client_id` does not identify the authenticated client."""
+
+    def __init__(self, expected: str, actual: str) -> None:
+        self.expected = expected
+        self.actual = actual
+        super().__init__(f"ID-JAG client_id {actual!r} does not match authenticated {expected!r}")
+
+
+class ClientAuthenticationRequired(VerificationError):
+    """ID-JAG presented without client authentication and without a usable
+    sender constraint (draft-ietf-oauth-identity-assertion-authz-grant-06 §4.4).
+    Maps to OAuth `invalid_client`.
+    """
+
+
+class SenderConstraintUnsupported(VerificationError):
+    """Token carries a `cnf` (RFC 7800) confirmation this verifier cannot check.
+
+    A verifier that does not support the confirmation method MUST reject
+    (draft-ietf-oauth-identity-assertion-authz-grant-06 §9.11).
+    """
+
+
+class ResourceNotGoverned(VerificationError):
+    """A `resource` (RFC 8707) in the grant is not governed by this server."""
+
+    def __init__(self, resource: str) -> None:
+        self.resource = resource
+        super().__init__(f"resource {resource!r} is not governed by this authorization server")
+
+
+class ReplayDetected(VerificationError):
+    """A one-time assertion's `jti` has already been redeemed."""
+
+    def __init__(self, jti: str) -> None:
+        self.jti = jti
+        super().__init__(f"assertion jti {jti!r} has already been used")
+
+
+class LifetimeTooLong(VerificationError):
+    """Assertion lifetime (`exp` - `iat`) exceeds the verifier's policy maximum."""
+
+
 class IssuanceError(AgentPassportError):
     """Base class for any failure raised by the issuer or its OIDC client."""
 

@@ -285,6 +285,14 @@ adopt consensus claim names as they emerge rather than minting our own.
 - [`draft-araut-oauth-transaction-tokens-for-agents`](https://datatracker.ietf.org/doc/draft-araut-oauth-transaction-tokens-for-agents/)
   — Amazon's `agentic_ctx` proposal; closest competitor to our chain
   metadata encoding.
+- [`draft-ietf-oauth-identity-assertion-authz-grant`](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/)
+  (ID-JAG; Parecki/McGuinness/Campbell) — WG draft behind Cross App Access
+  and MCP Enterprise-Managed Authorization. **Implemented against -06** (31
+  Oct 2026): Resource-AS validation in `idjag.py`. Gaps to close on future
+  revisions: `cnf` / DPoP-bound grants (§9.11, depends on
+  `draft-parecki-oauth-jwt-dpop-grant`), `sub_id` SAML NameID resolution
+  (§3.2), `authorization_details` enforcement helpers. Diff each revision's
+  Document History against `idjag.py`'s section references.
 - [`draft-ietf-oauth-identity-chaining`](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-identity-chaining-12)
   — WG-adopted; cross-domain delegation via RFC 8693 + RFC 7523.
 - [`draft-ietf-wimse-arch`](https://datatracker.ietf.org/doc/draft-ietf-wimse-arch/)
